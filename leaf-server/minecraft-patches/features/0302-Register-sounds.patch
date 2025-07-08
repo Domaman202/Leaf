@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Wed, 9 Jul 2025 05:58:55 +0700
+Subject: [PATCH] Register sounds
+
+
+diff --git a/net/minecraft/core/registries/BuiltInRegistries.java b/net/minecraft/core/registries/BuiltInRegistries.java
+index ed30a7f9ec46cf89157512cc4fe51babc43251cd..1777af96c97ccc6cfc18f75d0fee1338aaf86036 100644
+--- a/net/minecraft/core/registries/BuiltInRegistries.java
++++ b/net/minecraft/core/registries/BuiltInRegistries.java
+@@ -7,6 +7,8 @@ import com.mojang.serialization.MapCodec;
+ import java.util.Map;
+ import java.util.function.Consumer;
+ import java.util.function.Supplier;
++
++import net.bettercombat.utils.SoundHelper;
+ import net.minecraft.Util;
+ import net.minecraft.advancements.CriteriaTriggers;
+ import net.minecraft.advancements.CriterionTrigger;
+@@ -429,4 +431,10 @@ public class BuiltInRegistries {
+     interface RegistryBootstrap<T> {
+         Object run(Registry<T> registry);
+     }
++
++    // DomamaN202 start - Register BetterCombat sounds
++    static {
++        SoundHelper.registerSounds();
++    }
++    // DomamaN202 end - Register BetterCombat sounds
+ }
