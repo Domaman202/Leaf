@@ -153,10 +153,10 @@ public class ServerNetwork {
         final var hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
         if (hand == null) {
             LOGGER.error("Server handling Packets.C2S_AttackRequest - No current attack hand!");
-            LOGGER.error("Combo count: " + request.comboCount() + " is dual wielding: " + PlayerAttackHelper.isDualWielding(player));
-            LOGGER.error("Main-hand stack: " + player.getMainHandItem());
-            LOGGER.error("Off-hand stack: " + player.getOffhandItem());
-            LOGGER.error("Selected slot server: " + player.getInventory().getSelectedSlot() + " | client: " + request.selectedSlot());
+            LOGGER.error("Combo count: {} is dual wielding: {}", request.comboCount(), PlayerAttackHelper.isDualWielding(player));
+            LOGGER.error("Main-hand stack: {}", player.getMainHandItem());
+            LOGGER.error("Off-hand stack: {}", player.getOffhandItem());
+            LOGGER.error("Selected slot server: {} | client: {}", player.getInventory().getSelectedSlot(), request.selectedSlot());
             return;
         }
         final var attack = hand.attack();
@@ -269,7 +269,7 @@ public class ServerNetwork {
                                 || player.distanceToSqr(entity) <= validationRangeSquared) {
                             if (entity instanceof ItemEntity || entity instanceof ExperienceOrb || entity instanceof AbstractArrow || entity == player) {
                                 handler.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"), DisconnectionReason.UNKNOWN);
-                                LOGGER.warn("Player {} tried to attack an invalid entity", (Object) player.getName().getString());
+                                LOGGER.warn("Player {} tried to attack an invalid entity", player.getName().getString());
                                 return;
                             }
                             player.attack(entity);

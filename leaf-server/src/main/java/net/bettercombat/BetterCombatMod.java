@@ -5,7 +5,6 @@ import net.bettercombat.config.FallbackConfig;
 import net.bettercombat.config.ServerConfig;
 import net.bettercombat.logic.WeaponAttributesFallback;
 import net.bettercombat.logic.WeaponRegistry;
-import net.bettercombat.network.ServerNetwork;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 

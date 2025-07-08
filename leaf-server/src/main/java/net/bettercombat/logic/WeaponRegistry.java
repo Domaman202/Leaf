@@ -55,6 +55,7 @@ public class WeaponRegistry {
                 return container.attributes();
             }
         }
+
         Item item = itemStack.getItem();
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
         return WeaponRegistry.getAttributes(id);
@@ -81,16 +82,16 @@ public class WeaponRegistry {
             var identifier = entry.getKey();
             var resource = entry.getValue();
             try {
-                // System.out.println("Checking resource: " + identifier);
+                LOGGER.info("Checking resource: " + identifier);
                 JsonReader reader = new JsonReader(new InputStreamReader(resource.open()));
                 AttributesContainer container = WeaponAttributesHelper.decode(reader);
                 var id = identifier
                         .toString().replace("weapon_attributes/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 containers.put(ResourceLocation.parse(id), container);
-                System.out.println("Loaded container: " + id);
+                LOGGER.info("Loaded container: {}", id);
             } catch (Exception e) {
-                System.err.println("Failed to parse: " + identifier);
+                LOGGER.error("Failed to parse: {}", identifier);
                 e.printStackTrace();
             }
         }
