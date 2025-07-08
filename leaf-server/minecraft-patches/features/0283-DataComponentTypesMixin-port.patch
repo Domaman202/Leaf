@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 10:27:45 +0700
+Subject: [PATCH] DataComponentTypesMixin port
+
+
+diff --git a/net/minecraft/core/component/DataComponents.java b/net/minecraft/core/component/DataComponents.java
+index 3c97531a7bbcd84b80d4704aaa27b913652f4019..ccea53584a09aa3662df6f95c7fb410f62a37a6a 100644
+--- a/net/minecraft/core/component/DataComponents.java
++++ b/net/minecraft/core/component/DataComponents.java
+@@ -3,6 +3,8 @@ package net.minecraft.core.component;
+ import com.mojang.serialization.Codec;
+ import java.util.List;
+ import java.util.function.UnaryOperator;
++
++import net.bettercombat.api.component.BetterCombatDataComponents;
+ import net.minecraft.core.Holder;
+ import net.minecraft.core.Registry;
+ import net.minecraft.core.registries.BuiltInRegistries;
+@@ -393,4 +395,10 @@ public class DataComponents {
+     private static <T> DataComponentType<T> register(String name, UnaryOperator<DataComponentType.Builder<T>> builder) {
+         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, name, builder.apply(DataComponentType.builder()).build());
+     }
++
++    // DomamaN202 start - Mixin DataComponentTypesMixin
++    static {
++        var asd = BetterCombatDataComponents.WEAPON_PRESET_ID;  // Static class init tail inject
++    }
++    // DomamaN202 end - Mixin DataComponentTypesMixin
+ }

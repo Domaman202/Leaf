@@ -3,6 +3,7 @@ package net.bettercombat.network;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
+import io.papermc.paper.connection.DisconnectionReason;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.PlatformImpl;
 import net.bettercombat.logic.PlayerAttackHelper;
@@ -13,18 +14,23 @@ import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerPlayerConnection;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import org.slf4j.Logger;
 
 public class ServerNetwork {
@@ -53,7 +59,7 @@ public class ServerNetwork {
 
     public static ResourceLocation TEMPORARY_ATTACK = ResourceLocation.fromNamespaceAndPath(BetterCombatMod.ID, "temp_attack");
 
-    public static void handleAttackRequest(Packets.C2S_AttackRequest request, MinecraftServer server, ServerPlayer player, ServerPlayerConnection handler) {
+    public static void handleAttackRequest(Packets.C2S_AttackRequest request, MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler) {
         ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level()).orNull();
         final var hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
         if (hand == null) {
@@ -130,7 +136,7 @@ public class ServerNetwork {
 
                 var lastAttackedTicks = player.attackStrengthTicker;
                 if (!useVanillaPacket) {
-                    player.setSneaking(request.isSneaking());
+                    player.setShiftKeyDown(request.isSneaking());
                 }
 
                 var validationRangeSquared = range * range * BetterCombatMod.config.target_search_range_multiplier;
@@ -140,12 +146,12 @@ public class ServerNetwork {
                     Entity entity = world.getEntity(entityId);
                     if (entity == null) {
                         isBossPart = true;
-                        entity = world.getDragonPart(entityId); // Get LivingEntity or DragonPart
+                        entity = world.getEntityOrPart(entityId); // Get LivingEntity or DragonPart
                     }
 
                     if (entity == null
                             || (entity.equals(player.getVehicle()) && !TargetHelper.isAttackableMount(entity))
-                            || (entity instanceof ArmorStandEntity && ((ArmorStandEntity) entity).isMarker())) {
+                            || (entity instanceof ArmorStand && ((ArmorStand) entity).isMarker())) {
                         continue;
                     }
 
@@ -156,7 +162,7 @@ public class ServerNetwork {
 
                     if (entity instanceof LivingEntity livingEntity) {
                         if (BetterCombatMod.config.allow_fast_attacks) {
-                            livingEntity.timeUntilRegen = 0;
+                            livingEntity.invulnerableTime = 0;
                         }
                         if (knockbackMultiplier != 1F) {
                             ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_BetterCombat(knockbackMultiplier);
@@ -166,14 +172,14 @@ public class ServerNetwork {
                     // System.out.println("Server - Attacking hand: " + (hand.isOffHand() ? "offhand" : "mainhand") + " CD: " + player.getAttackCooldownProgress(0));
                     if (!isBossPart && useVanillaPacket) {
                         // System.out.println("HIT - A entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
-                        PlayerInteractEntityC2SPacket vanillaAttackPacket = PlayerInteractEntityC2SPacket.attack(entity, request.isSneaking());
-                        handler.onPlayerInteractEntity(vanillaAttackPacket);
+                        ServerboundInteractPacket vanillaAttackPacket = ServerboundInteractPacket.createAttackPacket(entity, request.isSneaking());
+                        handler.handleInteract(vanillaAttackPacket);
                     } else {
                         // System.out.println("HIT - B entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
                         if (!BetterCombatMod.config.server_target_range_validation
-                                || player.squaredDistanceTo(entity) <= validationRangeSquared) {
-                            if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof PersistentProjectileEntity || entity == player) {
-                                handler.disconnect(Text.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                                || player.distanceToSqr(entity) <= validationRangeSquared) {
+                            if (entity instanceof ItemEntity || entity instanceof ExperienceOrb || entity instanceof AbstractArrow || entity == player) {
+                                handler.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"), DisconnectionReason.UNKNOWN);
                                 LOGGER.warn("Player {} tried to attack an invalid entity", (Object) player.getName().getString());
                                 return;
                             }

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 09:37:31 +0700
+Subject: [PATCH] Access to LivingEntity.attackStrengthTicker
+
+
+diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
+index c17dd37976f26a91efd069cf14567d4839d9f483..314c8d35ba0a4bb36903aceac9c097190637dec2 100644
+--- a/net/minecraft/world/entity/LivingEntity.java
++++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -226,7 +226,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     public float oAttackAnim;
+     public float attackAnim;
+     // DomamaN202 start - Access to attackStrengthTicker
+-    protected int attackStrengthTicker;
++    public int attackStrengthTicker;
+     // DomamaN202 end - Access to attackStrengthTicker
+     public final WalkAnimationState walkAnimation = new WalkAnimationState();
+     public int invulnerableDuration = 20;

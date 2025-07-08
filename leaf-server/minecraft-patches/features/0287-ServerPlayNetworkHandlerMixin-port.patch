@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 10:42:04 +0700
+Subject: [PATCH] ServerPlayNetworkHandlerMixin port
+
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 09818ac59077a6a81f2f7c46d37d81b34e9ee3ab..cedf9eb33edb16447b69d1e8b72203e8798f457e 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -1962,6 +1962,21 @@ public class ServerGamePacketListenerImpl
+         this.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, posMoveRotation, relatives));
+     }
+ 
++    // DomamaN202 start - Mixin ServerPlayNetworkHandlerMixin
++    public ItemStack getItemInHand$BetterCombat(InteractionHand hand) {
++        ItemStack result = null;
++        switch (hand) {
++            case MAIN_HAND -> {
++                result = this.player.getMainHandItem();
++            }
++            case OFF_HAND -> {
++                result = this.player.getOffhandItem();
++            }
++        }
++        return result;
++    }
++    // DomamaN202 end - Mixin ServerPlayNetworkHandlerMixin
++
+     @Override
+     public void handlePlayerAction(ServerboundPlayerActionPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
+@@ -1973,17 +1988,23 @@ public class ServerGamePacketListenerImpl
+             switch (action) {
+                 case SWAP_ITEM_WITH_OFFHAND:
+                     if (!this.player.isSpectator()) {
+-                        ItemStack itemInHand = this.player.getItemInHand(InteractionHand.OFF_HAND);
++                        // DomamaN202 start - Mixin ServerPlayNetworkHandlerMixin
++                        ItemStack itemInHand = getItemInHand$BetterCombat(InteractionHand.OFF_HAND);
++                        // DomamaN202 end - Mixin ServerPlayNetworkHandlerMixin
+                         // CraftBukkit start - inspiration taken from DispenserRegistry (See SpigotCraft#394)
+                         CraftItemStack mainHand = CraftItemStack.asCraftMirror(itemInHand);
+-                        CraftItemStack offHand = CraftItemStack.asCraftMirror(this.player.getItemInHand(InteractionHand.MAIN_HAND));
++                        // DomamaN202 start - Mixin ServerPlayNetworkHandlerMixin
++                        CraftItemStack offHand = CraftItemStack.asCraftMirror(getItemInHand$BetterCombat(InteractionHand.MAIN_HAND));
++                        // DomamaN202 end - Mixin ServerPlayNetworkHandlerMixin
+                         PlayerSwapHandItemsEvent swapItemsEvent = new PlayerSwapHandItemsEvent(this.getCraftPlayer(), mainHand.clone(), offHand.clone());
+                         this.cserver.getPluginManager().callEvent(swapItemsEvent);
+                         if (swapItemsEvent.isCancelled()) {
+                             return;
+                         }
+                         if (swapItemsEvent.getOffHandItem().equals(offHand)) {
+-                            this.player.setItemInHand(InteractionHand.OFF_HAND, this.player.getItemInHand(InteractionHand.MAIN_HAND));
++                            // DomamaN202 start - Mixin ServerPlayNetworkHandlerMixin
++                            this.player.setItemInHand(InteractionHand.OFF_HAND, getItemInHand$BetterCombat(InteractionHand.MAIN_HAND));
++                            // DomamaN202 end - Mixin ServerPlayNetworkHandlerMixin
+                         } else {
+                             this.player.setItemInHand(InteractionHand.OFF_HAND, CraftItemStack.asNMSCopy(swapItemsEvent.getOffHandItem()));
+                         }

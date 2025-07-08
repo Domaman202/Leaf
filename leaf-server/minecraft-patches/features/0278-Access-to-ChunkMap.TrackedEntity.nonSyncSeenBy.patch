@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 07:31:49 +0700
+Subject: [PATCH] Access to ChunkMap.TrackedEntity.nonSyncSeenBy
+
+
+diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
+index 0a97a491737807d59815b75635fa3d8c94901ba8..892e400bb5f57e263fc5317ed80e01fadc90b065 100644
+--- a/net/minecraft/server/level/ChunkMap.java
++++ b/net/minecraft/server/level/ChunkMap.java
+@@ -1166,7 +1166,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+         SectionPos lastSectionPos;
+         // Leaf start - Multithreaded tracker
+         public static final ServerPlayerConnection[] EMPTY_OBJECT_ARRAY = new ServerPlayerConnection[0];
+-        private final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<ServerPlayerConnection> nonSyncSeenBy = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>() {
++        // DomamaN202 start - Access to nonSyncSeenBy
++        public final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<ServerPlayerConnection> nonSyncSeenBy = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>() {
++        // DomamaN202 end - Access to nonSyncSeenBy
+             @Override
+             public boolean add(ServerPlayerConnection serverPlayerConnection) {
+                 seenByUpdated = true;
