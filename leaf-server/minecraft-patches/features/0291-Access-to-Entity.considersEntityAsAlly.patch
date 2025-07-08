@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 10:55:50 +0700
+Subject: [PATCH] Access to Entity.considersEntityAsAlly
+
+
+diff --git a/net/minecraft/world/entity/TamableAnimal.java b/net/minecraft/world/entity/TamableAnimal.java
+index c9bd7212644b86be6eacdba2e12b6a19516bd2b6..d34490a33c09e8c457d750756f4e50fc1b98bab4 100644
+--- a/net/minecraft/world/entity/TamableAnimal.java
++++ b/net/minecraft/world/entity/TamableAnimal.java
+@@ -202,7 +202,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
+     }
+ 
+     @Override
+-    protected boolean considersEntityAsAlly(Entity entity) {
++    // DomamaN202 start - Access to considersEntityAsAlly
++    public boolean considersEntityAsAlly(Entity entity) {
++    // DomamaN202 end - Access to considersEntityAsAlly
+         if (this.isTame()) {
+             LivingEntity rootOwner = this.getRootOwner();
+             if (entity == rootOwner) {

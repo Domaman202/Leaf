@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 10:54:26 +0700
+Subject: [PATCH] Access to Entity.considersEntityAsAlly
+
+
+diff --git a/net/minecraft/world/entity/animal/allay/Allay.java b/net/minecraft/world/entity/animal/allay/Allay.java
+index cb88b1afe261f95998a19fcb555f91143834ba3a..57adc864c4ab1ded0d8e1fa5ebddd5b7cb0dd8c5 100644
+--- a/net/minecraft/world/entity/animal/allay/Allay.java
++++ b/net/minecraft/world/entity/animal/allay/Allay.java
+@@ -236,7 +236,9 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
+     }
+ 
+     @Override
+-    protected boolean considersEntityAsAlly(Entity entity) {
++    // DomamaN202 start - Access to considersEntityAsAlly
++    public boolean considersEntityAsAlly(Entity entity) {
++    // DomamaN202 end - Access to considersEntityAsAlly
+         return this.isLikedPlayer(entity) || super.considersEntityAsAlly(entity);
+     }
+ 
