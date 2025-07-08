@@ -3,6 +3,7 @@ package net.bettercombat;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -25,10 +26,10 @@ public class PlatformImpl {
     }
 
     public static boolean networkS2C_CanSend(ServerPlayer player, ResourceLocation packetId) {
-        return ServerPlayNetworking.canSend(player, packetId); // todo: DomamaN202
+        return true;
     }
 
     public static void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
-        ServerPlayNetworking.send(player, payload);  // todo: DomamaN202
+        player.connection.send(new ServerboundCustomPayloadPacket(payload));
     }
 }
