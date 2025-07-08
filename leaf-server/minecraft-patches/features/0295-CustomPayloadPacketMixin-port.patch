@@ -1,0 +1,168 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 13:26:13 +0700
+Subject: [PATCH] CustomPayloadPacketMixin port
+
+
+diff --git a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+index 1c5a065dd95b4292e1ec06db831791bbfb88e4ca..db316178986bea65f11a651e10c01a8450085f9d 100644
+--- a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+@@ -2,6 +2,9 @@ package net.minecraft.network.protocol.common;
+ 
+ import com.google.common.collect.Lists;
+ import java.util.List;
++
++import net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec;
++import net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl;
+ import net.minecraft.Util;
+ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.RegistryFriendlyByteBuf;
+@@ -13,6 +16,7 @@ import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
+ import net.minecraft.network.protocol.common.custom.BrandPayload;
+ import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
+ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload.TypeAndCodec;
+ import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+ import net.minecraft.network.protocol.common.custom.GameEventDebugPayload;
+ import net.minecraft.network.protocol.common.custom.GameEventListenerDebugPayload;
+@@ -33,38 +37,43 @@ import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
+ 
+ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ClientCommonPacketListener> {
+     private static final int MAX_PAYLOAD_SIZE = 1048576;
+-    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = CustomPacketPayload.<RegistryFriendlyByteBuf>codec(
++    // DomamaN202 start - Mixin CustomPayloadPacketMixin
++    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = wrapPlayCodec$Fabric(CustomPacketPayload.<RegistryFriendlyByteBuf>codec(
+             location -> DiscardedPayload.codec(location, 1048576),
+             Util.make(
+                 Lists.newArrayList(
+-                    new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BeeDebugPayload.TYPE, BeeDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BrainDebugPayload.TYPE, BrainDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BreezeDebugPayload.TYPE, BreezeDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameEventDebugPayload.TYPE, GameEventDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameEventListenerDebugPayload.TYPE, GameEventListenerDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameTestAddMarkerDebugPayload.TYPE, GameTestAddMarkerDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameTestClearMarkersDebugPayload.TYPE, GameTestClearMarkersDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GoalDebugPayload.TYPE, GoalDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(HiveDebugPayload.TYPE, HiveDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(NeighborUpdatesDebugPayload.TYPE, NeighborUpdatesDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PathfindingDebugPayload.TYPE, PathfindingDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiAddedDebugPayload.TYPE, PoiAddedDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiRemovedDebugPayload.TYPE, PoiRemovedDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiTicketCountDebugPayload.TYPE, PoiTicketCountDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(RaidsDebugPayload.TYPE, RaidsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(RedstoneWireOrientationsDebugPayload.TYPE, RedstoneWireOrientationsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(StructuresDebugPayload.TYPE, StructuresDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(VillageSectionsDebugPayload.TYPE, VillageSectionsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(WorldGenAttemptDebugPayload.TYPE, WorldGenAttemptDebugPayload.STREAM_CODEC)
++                    new TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(BeeDebugPayload.TYPE, BeeDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(BrainDebugPayload.TYPE, BrainDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(BreezeDebugPayload.TYPE, BreezeDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(GameEventDebugPayload.TYPE, GameEventDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(GameEventListenerDebugPayload.TYPE, GameEventListenerDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(GameTestAddMarkerDebugPayload.TYPE, GameTestAddMarkerDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(GameTestClearMarkersDebugPayload.TYPE, GameTestClearMarkersDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(GoalDebugPayload.TYPE, GoalDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(HiveDebugPayload.TYPE, HiveDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(NeighborUpdatesDebugPayload.TYPE, NeighborUpdatesDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(PathfindingDebugPayload.TYPE, PathfindingDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(PoiAddedDebugPayload.TYPE, PoiAddedDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(PoiRemovedDebugPayload.TYPE, PoiRemovedDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(PoiTicketCountDebugPayload.TYPE, PoiTicketCountDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(RaidsDebugPayload.TYPE, RaidsDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(RedstoneWireOrientationsDebugPayload.TYPE, RedstoneWireOrientationsDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(StructuresDebugPayload.TYPE, StructuresDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(VillageSectionsDebugPayload.TYPE, VillageSectionsDebugPayload.STREAM_CODEC),
++                    new TypeAndCodec<>(WorldGenAttemptDebugPayload.TYPE, WorldGenAttemptDebugPayload.STREAM_CODEC)
+                 ),
+                 list -> {}
+             )
+-        )
++        ))
++    // DomamaN202 end - Mixin CustomPayloadPacketMixin
+         .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+-    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayload.<FriendlyByteBuf>codec(
+-            id -> DiscardedPayload.codec(id, 1048576), List.of(new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
+-        )
++
++    // DomamaN202 start - Mixin CustomPayloadPacketMixin
++    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = wrapConfigCodec$Fabric(CustomPacketPayload.<FriendlyByteBuf>codec(
++            id -> DiscardedPayload.codec(id, 1048576), List.of(new TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
++        ))
++    // DomamaN202 end - Mixin CustomPayloadPacketMixin
+         .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+ 
+     @Override
+@@ -76,4 +85,18 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implem
+     public void handle(ClientCommonPacketListener handler) {
+         handler.handleCustomPayload(this);
+     }
++
++    // DomamaN202 start - Mixin CustomPayloadPacketMixin
++    private static StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> wrapPlayCodec$Fabric(StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> codec) {
++        FabricCustomPayloadPacketCodec<RegistryFriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<RegistryFriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.PLAY_C2S.get(identifier));
++        return codec;
++    }
++
++    private static StreamCodec<FriendlyByteBuf, CustomPacketPayload> wrapConfigCodec$Fabric(StreamCodec<FriendlyByteBuf, CustomPacketPayload> codec) {
++        FabricCustomPayloadPacketCodec<FriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.CONFIGURATION_C2S.get(identifier));
++        return codec;
++    }
++    // DomamaN202 end - Mixin CustomPayloadPacketMixin
+ }
+diff --git a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+index 2488e58d23d28cf3e2f582f4495b7303bcad0718..f1da320642a9b9b7cc5377170fcc84f25f0c3fd2 100644
+--- a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+@@ -1,21 +1,24 @@
+ package net.minecraft.network.protocol.common;
+ 
+-import com.google.common.collect.Lists;
+-import net.minecraft.Util;
++import net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec;
++import net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl;
+ import net.minecraft.network.FriendlyByteBuf;
++import net.minecraft.network.RegistryFriendlyByteBuf;
+ import net.minecraft.network.codec.StreamCodec;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.PacketType;
+-import net.minecraft.network.protocol.common.custom.BrandPayload;
+ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload.TypeAndCodec;
+ import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+ 
+ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ServerCommonPacketListener> {
+     private static final int MAX_PAYLOAD_SIZE = 32767;
+-    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC = CustomPacketPayload.<FriendlyByteBuf>codec(
++    // DomamaN202 start - Mixin CustomPayloadPacketMixin
++    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC = wrapCodec$Fabric(CustomPacketPayload.<FriendlyByteBuf>codec(
+             id -> DiscardedPayload.codec(id, 32767),
+             java.util.Collections.emptyList() // CraftBukkit - treat all packets the same
+-        )
++        ))
++    // DomamaN202 end - Mixin CustomPayloadPacketMixin
+         .map(ServerboundCustomPayloadPacket::new, ServerboundCustomPayloadPacket::payload);
+ 
+     @Override
+@@ -27,4 +30,17 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
+     public void handle(ServerCommonPacketListener handler) {
+         handler.handleCustomPayload(this);
+     }
++
++    // DomamaN202 start - Mixin CustomPayloadPacketMixin
++    private static StreamCodec<FriendlyByteBuf, CustomPacketPayload> wrapCodec$Fabric(StreamCodec<FriendlyByteBuf, CustomPacketPayload> codec) {
++        FabricCustomPayloadPacketCodec<FriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> {
++            if (packetByteBuf instanceof RegistryFriendlyByteBuf) {
++                return (TypeAndCodec<FriendlyByteBuf, ? extends CustomPacketPayload>) (Object) PayloadTypeRegistryImpl.PLAY_S2C.get(identifier);
++            }
++            return PayloadTypeRegistryImpl.CONFIGURATION_S2C.get(identifier);
++        });
++        return codec;
++    }
++    // DomamaN202 end - Mixin CustomPayloadPacketMixin
+ }

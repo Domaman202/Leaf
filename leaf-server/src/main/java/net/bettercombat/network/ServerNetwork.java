@@ -13,6 +13,7 @@ import net.bettercombat.logic.knockback.ConfigurableKnockback;
 import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -37,6 +38,15 @@ public class ServerNetwork {
     static final Logger LOGGER = LogUtils.getLogger();
 
     public static void init() {
+        PayloadTypeRegistry.configurationS2C().register(Packets.ConfigSync.PACKET_ID, Packets.ConfigSync.CODEC);
+        PayloadTypeRegistry.configurationS2C().register(Packets.WeaponRegistrySync.PACKET_ID, Packets.WeaponRegistrySync.CODEC);
+        PayloadTypeRegistry.configurationC2S().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.AttackSound.PACKET_ID, Packets.AttackSound.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.AttackAnimation.PACKET_ID, Packets.AttackAnimation.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.AttackAnimation.PACKET_ID, Packets.AttackAnimation.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.C2S_AttackRequest.PACKET_ID, Packets.C2S_AttackRequest.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.C2S_BlockHit.PACKET_ID, Packets.C2S_BlockHit.CODEC);
+
 //        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
 //            // This if block is required! Otherwise the client gets stuck in connection screen
 //            // if the client cannot handle the packet.

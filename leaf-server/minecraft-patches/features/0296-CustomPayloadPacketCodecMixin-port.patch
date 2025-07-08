@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 13:50:03 +0700
+Subject: [PATCH] CustomPayloadPacketCodecMixin port
+
+
+diff --git a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+index d2f522ea6d0a209496848af073c9af1c45d6b6ce..9360590a0bfecf046abd890b15b245b3c9ba0826 100644
+--- a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
++++ b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+@@ -3,7 +3,12 @@ package net.minecraft.network.protocol.common.custom;
+ import io.netty.buffer.ByteBuf;
+ import java.util.List;
+ import java.util.Map;
++import java.util.function.Function;
++import java.util.function.Supplier;
+ import java.util.stream.Collectors;
++
++import net.fabricmc.fabric.impl.networking.CustomPayloadTypeProvider;
++import net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec;
+ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.codec.StreamCodec;
+ import net.minecraft.network.codec.StreamDecoder;
+@@ -26,45 +31,80 @@ public interface CustomPacketPayload {
+     ) {
+         final Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map = typeAndCodecs.stream()
+             .collect(Collectors.toUnmodifiableMap(typeAndCodec -> typeAndCodec.type().id(), CustomPacketPayload.TypeAndCodec::codec));
+-        return new StreamCodec<B, CustomPacketPayload>() {
+-            private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation resourceLocation) {
+-                StreamCodec<? super B, ? extends CustomPacketPayload> streamCodec = map.get(resourceLocation);
+-                return streamCodec != null ? streamCodec : fallbackProvider.create(resourceLocation);
+-            }
++        // DomamaN202 start - Mixin CustomPayloadPacketCodecMixin
++        return new InternalCodec(fallbackProvider, map);
++    }
++
++    public class InternalCodec<B extends  FriendlyByteBuf> implements StreamCodec<B, CustomPacketPayload>, FabricCustomPayloadPacketCodec<B> {
++        private final CustomPacketPayload.FallbackProvider<B> fallbackProvider;
++        private final Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map;
++        private CustomPayloadTypeProvider<B> customPayloadTypeProvider;
+ 
+-            private <T extends CustomPacketPayload> void writeCap(B buffer, CustomPacketPayload.Type<T> type, CustomPacketPayload payload) {
+-                buffer.writeResourceLocation(type.id());
+-                StreamCodec<B, T> streamCodec = (StreamCodec<B, T>) this.findCodec(type.id);
+-                streamCodec.encode(buffer, (T)payload);
++        public InternalCodec(FallbackProvider<B> fallbackProvider, Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map) {
++            this.fallbackProvider = fallbackProvider;
++            this.map = map;
++            this.customPayloadTypeProvider = null;
++        }
++
++        @Override
++        public void fabric_setPacketCodecProvider(CustomPayloadTypeProvider<B> customPayloadTypeProvider) {
++            if (this.customPayloadTypeProvider != null) {
++                throw new IllegalStateException("Payload codec provider is already set!");
+             }
+ 
+-            @Override
+-            public void encode(B buffer, CustomPacketPayload value) {
+-                // Leaves start - protocol core
+-                if (value instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload payload) {
+-                    org.leavesmc.leaves.protocol.core.LeavesProtocolManager.encode(buffer, payload);
+-                    return;
+-                }
+-                // Leaves end - protocol core
+-                // Leaf start - Protocol core
+-                if (value instanceof org.dreeam.leaf.protocol.LeafCustomPayload payload) {
+-                    org.dreeam.leaf.protocol.Protocols.write(buffer, payload);
+-                    return;
++            this.customPayloadTypeProvider = customPayloadTypeProvider;
++        }
++
++        public <T extends CustomPacketPayload> StreamCodec<B, T> wrapGetCodec$Fabric(ResourceLocation identifier, Supplier<StreamCodec<B, T>> original, B packetByteBuf) {
++            if (customPayloadTypeProvider != null) {
++                TypeAndCodec<B, T> payloadType = (TypeAndCodec<B, T>) customPayloadTypeProvider.get(packetByteBuf, identifier);
++
++                if (payloadType != null) {
++                    return payloadType.codec();
+                 }
+-                // Leaf end - Protocol core
+-                this.writeCap(buffer, value.type(), value);
+             }
+ 
+-            @Override
+-            public CustomPacketPayload decode(B buffer) {
+-                ResourceLocation resourceLocation = buffer.readResourceLocation();
+-                // Leaves start - protocol core
+-                var payload = org.leavesmc.leaves.protocol.core.LeavesProtocolManager.decode(resourceLocation, buffer);
+-                return java.util.Objects.requireNonNullElseGet(payload, () -> this.findCodec(resourceLocation).decode(buffer));
+-                // Leaves end - protocol core
++            return original.get();
++        }
++
++        private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation resourceLocation) {
++            StreamCodec<? super B, ? extends CustomPacketPayload> streamCodec = map.get(resourceLocation);
++            return streamCodec != null ? streamCodec : fallbackProvider.create(resourceLocation);
++        }
++
++        private <T extends CustomPacketPayload> void writeCap(B buffer, CustomPacketPayload.Type<T> type, CustomPacketPayload payload) {
++            buffer.writeResourceLocation(type.id());
++            StreamCodec<B, T> streamCodec = wrapGetCodec$Fabric(type.id, () -> (StreamCodec<B, T>) this.findCodec(type.id), buffer);
++            streamCodec.encode(buffer, (T)payload);
++        }
++
++        @Override
++        public void encode(B buffer, CustomPacketPayload value) {
++            // Leaves start - protocol core
++            if (value instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload payload) {
++                org.leavesmc.leaves.protocol.core.LeavesProtocolManager.encode(buffer, payload);
++                return;
++            }
++            // Leaves end - protocol core
++            // Leaf start - Protocol core
++            if (value instanceof org.dreeam.leaf.protocol.LeafCustomPayload payload) {
++                org.dreeam.leaf.protocol.Protocols.write(buffer, payload);
++                return;
+             }
+-        };
++            // Leaf end - Protocol core
++            this.writeCap(buffer, value.type(), value);
++        }
++
++        @Override
++        public CustomPacketPayload decode(B buffer) {
++            ResourceLocation resourceLocation = buffer.readResourceLocation();
++            // Leaves start - protocol core
++            var payload = org.leavesmc.leaves.protocol.core.LeavesProtocolManager.decode(resourceLocation, buffer);
++            return java.util.Objects.requireNonNullElseGet(payload, () -> wrapGetCodec$Fabric(resourceLocation, () -> (StreamCodec<B, CustomPacketPayload>) this.findCodec(resourceLocation), buffer).decode(buffer));
++            // Leaves end - protocol core
++        }
+     }
++    // DomamaN202 end - Mixin CustomPayloadPacketCodecMixin
+ 
+     public interface FallbackProvider<B extends FriendlyByteBuf> {
+         StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation id);

@@ -1,0 +1,108 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 16:06:29 +0700
+Subject: [PATCH] Networkfix
+
+
+diff --git a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+index db316178986bea65f11a651e10c01a8450085f9d..af33bf078478136559859369f48b10c93012a613 100644
+--- a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+@@ -89,13 +89,13 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implem
+     // DomamaN202 start - Mixin CustomPayloadPacketMixin
+     private static StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> wrapPlayCodec$Fabric(StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> codec) {
+         FabricCustomPayloadPacketCodec<RegistryFriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<RegistryFriendlyByteBuf>) codec;
+-        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.PLAY_C2S.get(identifier));
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.PLAY_S2C.get(identifier));
+         return codec;
+     }
+ 
+     private static StreamCodec<FriendlyByteBuf, CustomPacketPayload> wrapConfigCodec$Fabric(StreamCodec<FriendlyByteBuf, CustomPacketPayload> codec) {
+         FabricCustomPayloadPacketCodec<FriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
+-        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.CONFIGURATION_C2S.get(identifier));
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> PayloadTypeRegistryImpl.CONFIGURATION_S2C.get(identifier));
+         return codec;
+     }
+     // DomamaN202 end - Mixin CustomPayloadPacketMixin
+diff --git a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+index f1da320642a9b9b7cc5377170fcc84f25f0c3fd2..692c17ff183fd334edbb65990800f258d4e42448 100644
+--- a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+@@ -36,9 +36,9 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
+         FabricCustomPayloadPacketCodec<FriendlyByteBuf> fabricCodec = (FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
+         fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> {
+             if (packetByteBuf instanceof RegistryFriendlyByteBuf) {
+-                return (TypeAndCodec<FriendlyByteBuf, ? extends CustomPacketPayload>) (Object) PayloadTypeRegistryImpl.PLAY_S2C.get(identifier);
++                return (TypeAndCodec<FriendlyByteBuf, ? extends CustomPacketPayload>) (Object) PayloadTypeRegistryImpl.PLAY_C2S.get(identifier);
+             }
+-            return PayloadTypeRegistryImpl.CONFIGURATION_S2C.get(identifier);
++            return PayloadTypeRegistryImpl.CONFIGURATION_C2S.get(identifier);
+         });
+         return codec;
+     }
+diff --git a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+index 9360590a0bfecf046abd890b15b245b3c9ba0826..15d36f46933ee50f65282deeed818415cecda5d8 100644
+--- a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
++++ b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+@@ -43,7 +43,6 @@ public interface CustomPacketPayload {
+         public InternalCodec(FallbackProvider<B> fallbackProvider, Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map) {
+             this.fallbackProvider = fallbackProvider;
+             this.map = map;
+-            this.customPayloadTypeProvider = null;
+         }
+ 
+         @Override
+@@ -58,12 +57,12 @@ public interface CustomPacketPayload {
+         public <T extends CustomPacketPayload> StreamCodec<B, T> wrapGetCodec$Fabric(ResourceLocation identifier, Supplier<StreamCodec<B, T>> original, B packetByteBuf) {
+             if (customPayloadTypeProvider != null) {
+                 TypeAndCodec<B, T> payloadType = (TypeAndCodec<B, T>) customPayloadTypeProvider.get(packetByteBuf, identifier);
+-
+                 if (payloadType != null) {
+                     return payloadType.codec();
+                 }
+             }
+-
++            System.out.println("WARNING ORIGINAL FOR : " + identifier);
++            System.out.println(customPayloadTypeProvider);
+             return original.get();
+         }
+ 
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 5fc950ed920e95b27ea1066f31fc590c1eb01afc..0503138ea061896eadc89623fa76f1d2423955a4 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -3798,12 +3798,6 @@ public class ServerGamePacketListenerImpl
+ 
+     @Override
+     public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
+-        // DomamaN202 start - DmNServerPlayNetworking
+-        var handler = DmNServerPlayNetworking.HANDLERS.get(packet.type());
+-        if (handler != null) {
+-            ((DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) handler).receive(packet.payload(), player);
+-        }
+-        // DomamaN202 end - DmNServerPlayNetworking
+         // Leaves start - protocol
+         if (packet.payload() instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload leavesPayload) {
+             org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePayload(player, leavesPayload);
+@@ -3815,6 +3809,21 @@ public class ServerGamePacketListenerImpl
+             }
+         }
+         // Leaves end - protocol
++        // DomamaN202 start - DmNServerPlayNetworking
++        LOGGER.warn("Custom payload: " + packet.payload().type().id());
++        var play_handler = DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
++        LOGGER.warn("Custom handler A: " + play_handler);
++        if (play_handler != null) {
++            ((DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), player);
++            return;
++        }
++        var config_handler = DmNServerPlayNetworking.CONFIG_HANDLERS.get(packet.payload().type().id());
++        LOGGER.warn("Custom handler B: " + config_handler);
++        if (config_handler != null) {
++            ((DmNServerPlayNetworking.ConfigPayloadHandler<CustomPacketPayload>) config_handler).receive(packet.payload(), player);
++            return;
++        }
++        // DomamaN202 end - DmNServerPlayNetworking
+         super.handleCustomPayload(packet); // Paper
+     }
+ 

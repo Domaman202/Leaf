@@ -3,9 +3,8 @@ package net.bettercombat;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +26,6 @@ public class PlatformImpl {
 
     public static void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
         System.out.println("Sended packet: " + payload);
-        player.connection.send(new ServerboundCustomPayloadPacket(payload));
+        player.connection.send(new ClientboundCustomPayloadPacket(payload));
     }
 }
