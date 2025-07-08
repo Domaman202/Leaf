@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 11:08:29 +0700
+Subject: [PATCH] PlayerEntityMixin port
+
+
+diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
+index 80ac2a9c3682ec7b02684ae5ced14adabf5c4354..0f61eb631b1f9c5a83ed3c654eb2cff2978eef5f 100644
+--- a/net/minecraft/world/entity/player/Player.java
++++ b/net/minecraft/world/entity/player/Player.java
+@@ -478,14 +478,14 @@ public abstract class Player extends LivingEntity {
+     @Override
+     public ItemStack getItemBySlot(EquipmentSlot slot) {
+         var mainHandHasTwoHanded = false;
+-        var mainHandStack = this.getMainHandItem();
++        var mainHandStack = super.getItemBySlot(EquipmentSlot.MAINHAND);
+         var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
+         if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
+             mainHandHasTwoHanded = true;
+         }
+ 
+         var offHandHasTwoHanded = false;
+-        var offHandStack = this.getOffhandItem();
++        var offHandStack = super.getItemBySlot(EquipmentSlot.OFFHAND);
+         var offHandAttributes = WeaponRegistry.getAttributes(offHandStack);
+         if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
+             offHandHasTwoHanded = true;

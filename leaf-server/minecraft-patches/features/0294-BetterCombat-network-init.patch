@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 12:28:44 +0700
+Subject: [PATCH] BetterCombat network init
+
+
+diff --git a/net/minecraft/server/dedicated/DedicatedServer.java b/net/minecraft/server/dedicated/DedicatedServer.java
+index 463a9d9b15301e7139bd36435214662aa3ccf63d..2a65be639213163f694e00244934b2aece47fa1a 100644
+--- a/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -19,6 +19,8 @@ import java.util.List;
+ import java.util.Locale;
+ import java.util.Optional;
+ import javax.annotation.Nullable;
++
++import net.bettercombat.network.ServerNetwork;
+ import net.minecraft.DefaultUncaughtExceptionHandler;
+ import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
+ import net.minecraft.SharedConstants;
+@@ -370,6 +372,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+             org.purpurmc.purpur.task.BossBarTask.startAll(); // Purpur - Implement TPSBar
+             if (org.purpurmc.purpur.PurpurConfig.beeCountPayload) org.purpurmc.purpur.task.BeehiveTask.instance().register(); // Purpur - Give bee counts in beehives to Purpur clients
+ 
++            LOGGER.info("BetterCombat network init");
++            ServerNetwork.init();
++
+             return true;
+         }
+     }

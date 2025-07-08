@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Tue, 8 Jul 2025 12:20:45 +0700
+Subject: [PATCH] DmNServerPlayNetworking impl
+
+
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index cedf9eb33edb16447b69d1e8b72203e8798f457e..5fc950ed920e95b27ea1066f31fc590c1eb01afc 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -27,6 +27,8 @@ import java.util.function.Consumer;
+ import java.util.stream.Collectors;
+ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
++
++import net.bettercombat.network.DmNServerPlayNetworking;
+ import net.minecraft.ChatFormatting;
+ import net.minecraft.Util;
+ import net.minecraft.advancements.AdvancementHolder;
+@@ -63,6 +65,7 @@ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.PacketUtils;
+ import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
+ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+ import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
+ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+@@ -3795,6 +3798,12 @@ public class ServerGamePacketListenerImpl
+ 
+     @Override
+     public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
++        // DomamaN202 start - DmNServerPlayNetworking
++        var handler = DmNServerPlayNetworking.HANDLERS.get(packet.type());
++        if (handler != null) {
++            ((DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) handler).receive(packet.payload(), player);
++        }
++        // DomamaN202 end - DmNServerPlayNetworking
+         // Leaves start - protocol
+         if (packet.payload() instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload leavesPayload) {
+             org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePayload(player, leavesPayload);
