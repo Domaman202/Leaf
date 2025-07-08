@@ -42,9 +42,7 @@ public class SoundHelper {
             PlatformImpl.around(world, origin, distance).forEach(serverPlayer -> {
                 var channel = Packets.AttackSound.ID;
                 try {
-                    if (PlatformImpl.networkS2C_CanSend(serverPlayer, channel)) {
-                        PlatformImpl.networkS2C_Send(serverPlayer, packet);
-                    }
+                    PlatformImpl.networkS2C_Send(serverPlayer, packet);
                 } catch (Exception e){
                     e.printStackTrace();
                 }

@@ -25,11 +25,8 @@ public class PlatformImpl {
         return PlayerLookup.around(world, origin, distance);
     }
 
-    public static boolean networkS2C_CanSend(ServerPlayer player, ResourceLocation packetId) {
-        return true;
-    }
-
     public static void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
+        System.out.println("Sended packet: " + payload);
         player.connection.send(new ServerboundCustomPayloadPacket(payload));
     }
 }

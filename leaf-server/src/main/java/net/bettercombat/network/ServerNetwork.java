@@ -36,21 +36,100 @@ import org.slf4j.Logger;
 public class ServerNetwork {
     static final Logger LOGGER = LogUtils.getLogger();
 
+    public static void init() {
+//        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
+//            // This if block is required! Otherwise the client gets stuck in connection screen
+//            // if the client cannot handle the packet.
+//            if (ServerConfigurationNetworking.canSend(handler, Packets.ConfigSync.ID)) {
+//                // System.out.println("Starting ConfigurationTask");
+//                var configJson = Packets.ConfigSync.serialize(BetterCombatMod.getConfig());
+//                handler.addTask(new ConfigurationTask(configJson));
+//            } else {
+//                handler.disconnect(Text.literal("Network configuration task not supported: " + ConfigurationTask.name));
+//            }
+//        });
+//
+//        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
+//            if (ServerConfigurationNetworking.canSend(handler, Packets.WeaponRegistrySync.ID)) {
+//                if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
+//                    throw new AssertionError("Weapon registry is empty!");
+//                }
+//                // System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
+//                handler.addTask(new WeaponRegistrySyncTask(WeaponRegistry.getEncodedRegistry()));
+//            } else {
+//                handler.disconnect(Text.literal("Network configuration task not supported: " + WeaponRegistrySyncTask.name));
+//            }
+//        });
+//
+//        ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
+//            // Warning: if you do not call completeTask, the client gets stuck!
+//            if (packet.code().equals(ConfigurationTask.name)) {
+//                context.networkHandler().completeTask(ConfigurationTask.KEY);
+//            }
+//            if (packet.code().equals(WeaponRegistrySyncTask.name)) {
+//                context.networkHandler().completeTask(WeaponRegistrySyncTask.KEY);
+//            }
+//        }); // todo:
+
+        DmNServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.PACKET_ID, (packet, player) -> {
+            System.out.println("PACKET ATTACK ANIMATION!!!");
+            ServerNetwork.handleAttackAnimation(packet, player.server, player);
+        });
+
+        DmNServerPlayNetworking.registerGlobalReceiver(Packets.C2S_AttackRequest.PACKET_ID, (packet, player) -> {
+            System.out.println("PACKET ATTACK REQUEST!!!");
+            ServerNetwork.handleAttackRequest(packet, player.server, player, player.connection);
+        });
+
+        DmNServerPlayNetworking.registerGlobalReceiver(Packets.C2S_BlockHit.PACKET_ID, (packet, player) -> {
+            System.out.println("PACKET BLOCK HIT!!!");
+            ServerNetwork.handleBlockHit(packet, player.server, player);
+        });
+    }
+
+//    public record ConfigurationTask(String configString) implements ServerPlayerConfigurationTask { // todo:
+//        public static final String name = BetterCombatMod.ID + ":" + "config";
+//        public static final Key KEY = new Key(name);
+//
+//        @Override
+//        public Key getKey() {
+//            return KEY;
+//        }
+//
+//        @Override
+//        public void sendPacket(Consumer<Packet<?>> sender) {
+//            var packet = new Packets.ConfigSync(this.configString);
+//            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
+//        }
+//    }
+//
+//    public record WeaponRegistrySyncTask(WeaponRegistry.Encoded encodedRegistry) implements ServerPlayerConfigurationTask {
+//        public static final String name = BetterCombatMod.ID + ":" + "weapon_registry";
+//        public static final Key KEY = new Key(name);
+//
+//        @Override
+//        public Key getKey() {
+//            return KEY;
+//        }
+//
+//        @Override
+//        public void sendPacket(Consumer<Packet<?>> sender) {
+//            var packet = new Packets.WeaponRegistrySync(encodedRegistry.compressed(), encodedRegistry.chunks());
+//            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
+//        }
+//    }
+
     public static void handleAttackAnimation(Packets.AttackAnimation packet, MinecraftServer server, ServerPlayer player) {
         final var forwardPacket = new Packets.AttackAnimation(player.getId(), packet.animatedHand(), packet.animationName(), packet.length(), packet.upswing());
         try {
             //send info back for Replaymod Compat
-            if (PlatformImpl.networkS2C_CanSend(player, Packets.AttackAnimation.ID)) {
-                PlatformImpl.networkS2C_Send(player, forwardPacket);
-            }
+            PlatformImpl.networkS2C_Send(player, forwardPacket);
         } catch (Exception e){
             e.printStackTrace();
         }
         PlatformImpl.tracking(player).forEach(serverPlayer -> {
             try {
-                if (PlatformImpl.networkS2C_CanSend(serverPlayer, Packets.AttackAnimation.ID)) {
-                    PlatformImpl.networkS2C_Send(serverPlayer, forwardPacket);
-                }
+                PlatformImpl.networkS2C_Send(serverPlayer, forwardPacket);
             } catch (Exception e){
                 e.printStackTrace();
             }

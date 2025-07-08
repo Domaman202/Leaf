@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class Packets {
     public record C2S_AttackRequest(int comboCount, boolean isSneaking, int selectedSlot, int cursorTarget, int[] entityIds) implements CustomPacketPayload {
@@ -140,7 +141,17 @@ public class Packets {
     public record C2S_BlockHit(BlockPos pos) implements CustomPacketPayload {
         public static ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(BetterCombatMod.ID, "block_hit");
         public static final Type<C2S_BlockHit> PACKET_ID = new Type<>(ID);
-        public static final StreamCodec<FriendlyByteBuf, C2S_BlockHit> CODEC = (StreamCodec<FriendlyByteBuf, C2S_BlockHit>) BlockPos.CODEC.xmap(C2S_BlockHit::new, C2S_BlockHit::pos);
+        public static final StreamCodec<FriendlyByteBuf, C2S_BlockHit> CODEC = new StreamCodec<FriendlyByteBuf, C2S_BlockHit>() {
+            @Override
+            public C2S_BlockHit decode(FriendlyByteBuf buffer) {
+                return new C2S_BlockHit(BlockPos.STREAM_CODEC.decode(buffer));
+            }
+
+            @Override
+            public void encode(FriendlyByteBuf buffer, C2S_BlockHit value) {
+                BlockPos.STREAM_CODEC.encode(buffer, value.pos);
+            }
+        };
 
         @Override
         public @NotNull Type<? extends CustomPacketPayload> type() {
