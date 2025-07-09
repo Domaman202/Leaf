@@ -15,7 +15,7 @@ public class FullConfig {
     public void load(JavaPlugin plugin) {
         try {
             this.server = new ServerConfig();
-            this.fallback = new FallbackConfig();
+            this.fallback = FallbackConfig.createDefault();
             // Проверка директории
             if (!new File(plugin.getDataFolder(), "config/bettercombat").exists()) {
                 this.save(plugin);
