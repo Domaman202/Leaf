@@ -33,6 +33,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import org.slf4j.Logger;
+import ru.cws.network.DmNServerPlayNetworking;
 
 public class ServerNetwork {
     static final Logger LOGGER = LogUtils.getLogger();
@@ -149,7 +150,7 @@ public class ServerNetwork {
     public static ResourceLocation TEMPORARY_ATTACK = ResourceLocation.fromNamespaceAndPath(BetterCombatMod.ID, "temp_attack");
 
     public static void handleAttackRequest(Packets.C2S_AttackRequest request, MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler) {
-        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level()).orNull();
+        var config = BetterCombatMod.config.server; ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level()).orNull();
         final var hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
         if (hand == null) {
             LOGGER.error("Server handling Packets.C2S_AttackRequest - No current attack hand!");
@@ -182,21 +183,21 @@ public class ServerNetwork {
 
                     SoundHelper.playSound(world, player, attack.swingSound());
 
-                    if (BetterCombatMod.config.allow_reworked_sweeping && request.entityIds().length > 1) {
+                    if (config.allow_reworked_sweeping && request.entityIds().length > 1) {
                         double multiplier = 0
-                                - (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty / BetterCombatMod.config.reworked_sweeping_extra_target_count)
-                                * Math.min(BetterCombatMod.config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
+                                - (config.reworked_sweeping_maximum_damage_penalty / config.reworked_sweeping_extra_target_count)
+                                * Math.min(config.reworked_sweeping_extra_target_count, request.entityIds().length - 1);
                         var sweepRatio = player.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO);
 
-                        damageBaseMultiplier += multiplier + (BetterCombatMod.config.reworked_sweeping_maximum_damage_penalty * sweepRatio);
+                        damageBaseMultiplier += multiplier + (config.reworked_sweeping_maximum_damage_penalty * sweepRatio);
 
-                        boolean playEffects = !BetterCombatMod.config.reworked_sweeping_sound_and_particles_only_for_swords
+                        boolean playEffects = !config.reworked_sweeping_sound_and_particles_only_for_swords
 //                                || (hand.itemStack().getItem() instanceof SwordItem); // todo: check is sword
                             ;
-                        if (BetterCombatMod.config.reworked_sweeping_plays_sound && playEffects) {
+                        if (config.reworked_sweeping_plays_sound && playEffects) {
                             world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, player.getSoundSource(), 1.0f, 1.0f);
                         }
-                        if (BetterCombatMod.config.reworked_sweeping_emits_particles && playEffects) {
+                        if (config.reworked_sweeping_emits_particles && playEffects) {
                             player.sweepAttack();
                         }
                     }
@@ -213,9 +214,9 @@ public class ServerNetwork {
 
                 var attackCooldown = PlayerAttackHelper.getAttackCooldownTicksCapped(player);
                 var knockbackMultiplier = 1F;
-                if (BetterCombatMod.config.knockback_reduced_for_fast_attacks)  {
-                    knockbackMultiplier = MathHelper.clamp(attackCooldown / BetterCombatMod.config.knockback_reduction_threshold, 0.1F, 1F);
-                    switch (BetterCombatMod.config.knockback_reduction_curve) {
+                if (config.knockback_reduced_for_fast_attacks)  {
+                    knockbackMultiplier = MathHelper.clamp(attackCooldown / config.knockback_reduction_threshold, 0.1F, 1F);
+                    switch (config.knockback_reduction_curve) {
                         case SQUARE -> { knockbackMultiplier *= knockbackMultiplier; }
                         case HALF_SQUARE -> { knockbackMultiplier = (knockbackMultiplier * knockbackMultiplier + knockbackMultiplier) * 0.5F; }
                         default -> {}
@@ -228,7 +229,7 @@ public class ServerNetwork {
                     player.setShiftKeyDown(request.isSneaking());
                 }
 
-                var validationRangeSquared = range * range * BetterCombatMod.config.target_search_range_multiplier;
+                var validationRangeSquared = range * range * config.target_search_range_multiplier;
                 for (int entityId : request.entityIds()) {
                     // getEntityById(entityId);
                     boolean isBossPart = false;
@@ -250,7 +251,7 @@ public class ServerNetwork {
                     }
 
                     if (entity instanceof LivingEntity livingEntity) {
-                        if (BetterCombatMod.config.allow_fast_attacks) {
+                        if (config.allow_fast_attacks) {
                             livingEntity.invulnerableTime = 0;
                         }
                         if (knockbackMultiplier != 1F) {
@@ -265,7 +266,7 @@ public class ServerNetwork {
                         handler.handleInteract(vanillaAttackPacket);
                     } else {
                         // System.out.println("HIT - B entity: " + entity.getEntityName() + " id: " + entity.getId() + " class: " + entity.getClass());
-                        if (!BetterCombatMod.config.server_target_range_validation
+                        if (!config.server_target_range_validation
                                 || player.distanceToSqr(entity) <= validationRangeSquared) {
                             if (entity instanceof ItemEntity || entity instanceof ExperienceOrb || entity instanceof AbstractArrow || entity == player) {
                                 handler.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"), DisconnectionReason.UNKNOWN);

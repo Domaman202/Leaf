@@ -1,6 +1,5 @@
-package net.bettercombat.network;
+package ru.cws.network;
 
-import net.minecraft.network.protocol.ProtocolCodecBuilder;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
 import net.minecraft.resources.ResourceLocation;

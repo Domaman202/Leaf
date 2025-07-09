@@ -14,7 +14,7 @@ import net.minecraft.world.item.ProjectileWeaponItem;
 
 public class WeaponAttributesFallback {
     public static void initialize() {
-        var config = BetterCombatMod.fallbackConfig;
+        var config = BetterCombatMod.config.fallback;
         for(var itemId: BuiltInRegistries.ITEM.keySet()) {
             var item = BuiltInRegistries.ITEM.getValue(itemId);
             if (PatternMatching.matches(itemId.toString(), config.blacklist_item_id_regex)) {

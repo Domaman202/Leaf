@@ -167,7 +167,7 @@ public class WeaponRegistry {
     }
 
     public static void encodeRegistry() {
-        var compressed = BetterCombatMod.config.weapon_registry_compression;
+        var compressed = BetterCombatMod.config.server.weapon_registry_compression;
         List<String> chunks = new ArrayList<>();
         var syncContent = new SyncFormat();
         containers.forEach((key, value) -> {
@@ -181,7 +181,7 @@ public class WeaponRegistry {
         if (compressed) {
             json = CompressionHelper.gzipCompress(json);
         }
-        if (BetterCombatMod.config.weapon_registry_logging) {
+        if (BetterCombatMod.config.server.weapon_registry_logging) {
             LOGGER.info("Weapon Attribute assignments loaded: " + json);
         }
         for (int i = 0; i < json.length(); i += CHUNK_SIZE) {

@@ -18,8 +18,8 @@ public class PlayerAttackHelper {
     public static float getDualWieldingAttackDamageMultiplier(Player player, AttackHand hand) {
         return isDualWielding(player)
                 ? (hand.isOffHand()
-                    ? BetterCombatMod.config.dual_wielding_off_hand_damage_multiplier
-                    : BetterCombatMod.config.dual_wielding_main_hand_damage_multiplier)
+                    ? BetterCombatMod.config.server.dual_wielding_off_hand_damage_multiplier
+                    : BetterCombatMod.config.server.dual_wielding_main_hand_damage_multiplier)
                 : 1;
     }
 
@@ -40,7 +40,7 @@ public class PlayerAttackHelper {
 
     public static float getAttackCooldownTicksCapped(Player player) {
         // `getAttackCooldownProgressPerTick` should be called `getAttackCooldownLengthTicks`
-        return Math.max(player.getCurrentItemAttackStrengthDelay(), BetterCombatMod.config.attack_interval_cap);
+        return Math.max(player.getCurrentItemAttackStrengthDelay(), BetterCombatMod.config.server.attack_interval_cap);
     }
 
     @Nullable

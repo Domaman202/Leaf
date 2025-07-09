@@ -34,7 +34,7 @@ public class TargetHelper {
     }
 
     public static Relation getRelation(Player attacker, Entity target) {
-        var config = BetterCombatMod.config;
+        var config = BetterCombatMod.config.server;
         if (attacker == target) {
             return config.player_relation_to_self_and_pets; // Relation.NEUTRAL by default, to allow direct hits on pets
         }
@@ -80,7 +80,7 @@ public class TargetHelper {
     private static Map<TagKey<EntityType<?>>, Relation> getRelationTagsCache() {
         if (RELATION_TAG_CACHE == null) {
             RELATION_TAG_CACHE = new HashMap<>();
-            for (var entrySet: BetterCombatMod.config.player_relation_tags.entrySet()) {
+            for (var entrySet: BetterCombatMod.config.server.player_relation_tags.entrySet()) {
                 var tagString = entrySet.getKey();
                 var relation = entrySet.getValue();
                 var tag = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(tagString));
@@ -112,12 +112,12 @@ public class TargetHelper {
         if (entity instanceof Monster || isEntityHostileVehicle(entity.getName().getString())) {
             return true;
         }
-        return BetterCombatMod.config.allow_attacking_mount;
+        return BetterCombatMod.config.server.allow_attacking_mount;
     }
 
     public static boolean isEntityHostileVehicle(String entityName) {
         // An entity is a hostile vehicle via blacklist specifically
-        var config = BetterCombatMod.config;
+        var config = BetterCombatMod.config.server;
         return config.hostile_player_vehicles != null
                 && config.hostile_player_vehicles.length > 0
                 && Arrays.asList(config.hostile_player_vehicles).contains(entityName);
