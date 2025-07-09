@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Wed, 9 Jul 2025 12:55:01 +0700
+Subject: [PATCH] ServerConfigurationNetworkHandlerMixin impl
+
+
+diff --git a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+index 70eb3ea8094bbbd460452935f62579b027a7925f..0c1fa0525819a1a1a78730d08a2592975fafbec5 100644
+--- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+@@ -22,11 +22,13 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+ import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
+ import net.minecraft.network.protocol.common.ServerboundPongPacket;
+ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ClientInformation;
+ import net.minecraft.util.VisibleForDebug;
+ import org.slf4j.Logger;
++import ru.cws.network.DmNServerPlayNetworking;
+ 
+ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
+     private static final Logger LOGGER = LogUtils.getLogger();
+@@ -215,6 +217,22 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
+             }
+ 
+             this.cserver.getMessenger().dispatchIncomingMessage(paperConnection(), identifier.toString(), data);
++
++            // DomamaN202 start - DmNServerPlayNetworking
++            LOGGER.warn("Custom payload: " + packet.payload().type().id());
++            var play_handler = DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
++            LOGGER.warn("Custom handler A: " + play_handler);
++            if (play_handler != null) {
++                ((DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), this.connection.getPlayer());
++                return;
++            }
++            var config_handler = DmNServerPlayNetworking.CONFIG_HANDLERS.get(packet.payload().type().id());
++            LOGGER.warn("Custom handler B: " + config_handler);
++            if (config_handler != null && this instanceof ServerConfigurationPacketListenerImpl) {
++                ((DmNServerPlayNetworking.ConfigPayloadHandler<CustomPacketPayload>) config_handler).receive(packet.payload(), (ServerConfigurationPacketListenerImpl) this, this.connection.getPlayer());
++                return;
++            }
++            // DomamaN202 end - DmNServerPlayNetworking
+         } catch (final Exception e) {
+             ServerGamePacketListenerImpl.LOGGER.error("Couldn't handle custom payload on channel {}", identifier, e);
+             this.disconnect(net.minecraft.network.chat.Component.literal("Invalid custom payload payload!"), io.papermc.paper.connection.DisconnectionReason.INVALID_PAYLOAD); // Paper - kick event cause
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index ee9591fd916834786f4420fbb30445dd98ced1ce..caf2ddab06eb45c150b7f8119b238d013aae6d10 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -3809,21 +3809,6 @@ public class ServerGamePacketListenerImpl
+             }
+         }
+         // Leaves end - protocol
+-        // DomamaN202 start - DmNServerPlayNetworking
+-        LOGGER.warn("Custom payload: " + packet.payload().type().id());
+-        var play_handler = DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
+-        LOGGER.warn("Custom handler A: " + play_handler);
+-        if (play_handler != null) {
+-            ((DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), player);
+-            return;
+-        }
+-        var config_handler = DmNServerPlayNetworking.CONFIG_HANDLERS.get(packet.payload().type().id());
+-        LOGGER.warn("Custom handler B: " + config_handler);
+-        if (config_handler != null) {
+-            ((DmNServerPlayNetworking.ConfigPayloadHandler<CustomPacketPayload>) config_handler).receive(packet.payload(), player);
+-            return;
+-        }
+-        // DomamaN202 end - DmNServerPlayNetworking
+         super.handleCustomPayload(packet); // Paper
+     }
+ 

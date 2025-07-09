@@ -4,6 +4,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,6 @@ public class DmNServerPlayNetworking {
 
     @FunctionalInterface
     public interface ConfigPayloadHandler<T extends CustomPacketPayload> {
-        void receive(T payload, ServerPlayer sender);
+        void receive(T payload, ServerConfigurationPacketListenerImpl listener, ServerPlayer sender);
     }
 }

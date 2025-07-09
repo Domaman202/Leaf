@@ -9,13 +9,17 @@ import net.bettercombat.PlatformImpl;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
 import net.bettercombat.logic.TargetHelper;
+import net.bettercombat.logic.WeaponRegistry;
 import net.bettercombat.logic.knockback.ConfigurableKnockback;
 import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -32,8 +36,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import ru.cws.network.DmNServerPlayNetworking;
+
+import java.util.function.Consumer;
 
 public class ServerNetwork {
     static final Logger LOGGER = LogUtils.getLogger();
@@ -48,39 +55,32 @@ public class ServerNetwork {
         PayloadTypeRegistry.playC2S().register(Packets.C2S_AttackRequest.PACKET_ID, Packets.C2S_AttackRequest.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.C2S_BlockHit.PACKET_ID, Packets.C2S_BlockHit.CODEC);
 
-//        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
-//            // This if block is required! Otherwise the client gets stuck in connection screen
-//            // if the client cannot handle the packet.
-//            if (ServerConfigurationNetworking.canSend(handler, Packets.ConfigSync.ID)) {
-//                // System.out.println("Starting ConfigurationTask");
-//                var configJson = Packets.ConfigSync.serialize(BetterCombatMod.getConfig());
-//                handler.addTask(new ConfigurationTask(configJson));
-//            } else {
-//                handler.disconnect(Text.literal("Network configuration task not supported: " + ConfigurationTask.name));
-//            }
-//        });
-//
-//        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
-//            if (ServerConfigurationNetworking.canSend(handler, Packets.WeaponRegistrySync.ID)) {
-//                if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
-//                    throw new AssertionError("Weapon registry is empty!");
-//                }
-//                // System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
-//                handler.addTask(new WeaponRegistrySyncTask(WeaponRegistry.getEncodedRegistry()));
-//            } else {
-//                handler.disconnect(Text.literal("Network configuration task not supported: " + WeaponRegistrySyncTask.name));
-//            }
-//        });
-//
-//        ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
-//            // Warning: if you do not call completeTask, the client gets stuck!
-//            if (packet.code().equals(ConfigurationTask.name)) {
-//                context.networkHandler().completeTask(ConfigurationTask.KEY);
-//            }
-//            if (packet.code().equals(WeaponRegistrySyncTask.name)) {
-//                context.networkHandler().completeTask(WeaponRegistrySyncTask.KEY);
-//            }
-//        }); // todo:
+        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
+             System.out.println("Starting ConfigurationTask");
+            var configJson = Packets.ConfigSync.serialize(BetterCombatMod.config.server);
+            handler.configurationTasks.add(new ConfigurationTask(configJson));
+        });
+
+        ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
+            if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
+                throw new AssertionError("Weapon registry is empty!");
+            }
+             System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
+            handler.configurationTasks.add(new WeaponRegistrySyncTask(WeaponRegistry.getEncodedRegistry()));
+        });
+
+        DmNServerPlayNetworking.registerGlobalConfigReceiver(Packets.Ack.PACKET_ID, (packet, listener, context) -> {
+            // Warning: if you do not call completeTask, the client gets stuck!
+            System.out.println("Received Ack Packet " + packet.getClass().getSimpleName());
+            if (packet.code().equals(ConfigurationTask.name)) {
+                System.out.println("Received Ack ConfigurationTask");
+                listener.completeTask$Fabric(ConfigurationTask.KEY);
+            }
+            if (packet.code().equals(WeaponRegistrySyncTask.name)) {
+                System.out.println("Received Ack WeaponRegistrySyncTask");
+                listener.completeTask$Fabric(WeaponRegistrySyncTask.KEY);
+            }
+        });
 
         DmNServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.PACKET_ID, (packet, player) -> {
             System.out.println("PACKET ATTACK ANIMATION!!!");
@@ -98,37 +98,39 @@ public class ServerNetwork {
         });
     }
 
-//    public record ConfigurationTask(String configString) implements ServerPlayerConfigurationTask { // todo:
-//        public static final String name = BetterCombatMod.ID + ":" + "config";
-//        public static final Key KEY = new Key(name);
-//
-//        @Override
-//        public Key getKey() {
-//            return KEY;
-//        }
-//
-//        @Override
-//        public void sendPacket(Consumer<Packet<?>> sender) {
-//            var packet = new Packets.ConfigSync(this.configString);
-//            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
-//        }
-//    }
-//
-//    public record WeaponRegistrySyncTask(WeaponRegistry.Encoded encodedRegistry) implements ServerPlayerConfigurationTask {
-//        public static final String name = BetterCombatMod.ID + ":" + "weapon_registry";
-//        public static final Key KEY = new Key(name);
-//
-//        @Override
-//        public Key getKey() {
-//            return KEY;
-//        }
-//
-//        @Override
-//        public void sendPacket(Consumer<Packet<?>> sender) {
-//            var packet = new Packets.WeaponRegistrySync(encodedRegistry.compressed(), encodedRegistry.chunks());
-//            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
-//        }
-//    }
+    public record ConfigurationTask(String configString) implements net.minecraft.server.network.ConfigurationTask {
+        public static final String name = BetterCombatMod.ID + ":" + "config";
+        public static final Type KEY = new Type(name);
+
+        @Override
+        public void start(Consumer<Packet<?>> task) {
+            System.out.println("Configuration sync!");
+            var packet = new Packets.ConfigSync(this.configString);
+            task.accept(new ClientboundCustomPayloadPacket(packet));
+        }
+
+        @Override
+        public @NotNull Type type() {
+            return KEY;
+        }
+    }
+
+    public record WeaponRegistrySyncTask(WeaponRegistry.Encoded encodedRegistry) implements net.minecraft.server.network.ConfigurationTask {
+        public static final String name = BetterCombatMod.ID + ":" + "weapon_registry";
+        public static final Type KEY = new Type(name);
+
+        @Override
+        public void start(Consumer<Packet<?>> task) {
+            System.out.println("Weapon registry sync!");
+            var packet = new Packets.WeaponRegistrySync(encodedRegistry.compressed(), encodedRegistry.chunks());
+            task.accept(new ClientboundCustomPayloadPacket(packet));
+        }
+
+        @Override
+        public @NotNull Type type() {
+            return KEY;
+        }
+    }
 
     public static void handleAttackAnimation(Packets.AttackAnimation packet, MinecraftServer server, ServerPlayer player) {
         final var forwardPacket = new Packets.AttackAnimation(player.getId(), packet.animatedHand(), packet.animationName(), packet.length(), packet.upswing());

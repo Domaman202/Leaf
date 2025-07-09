@@ -1,0 +1,92 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Wed, 9 Jul 2025 12:41:19 +0700
+Subject: [PATCH] ServerConfigurationNetworkHandlerMixin impl
+
+
+diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+index c6517d5844da743f54a30be475f277b29e0c3e74..4159acbed71318a05a0e6165e6a97f078beadb68 100644
+--- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -80,7 +80,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+             ServerConfigurationPacketListenerImpl.LOGGER.info("{} lost connection: {}, while in configuration phase {}", this.gameProfile, details.reason().getString(), this.currentTask != null ? this.currentTask.type().id() : "null");
+         } else
+         // Paper end
+-        LOGGER.info("{} lost connection: {}", this.gameProfile, details.reason().getString());
++            LOGGER.info("{} lost connection: {}", this.gameProfile, details.reason().getString());
+         super.onDisconnect(details);
+     }
+ 
+@@ -90,7 +90,21 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+     }
+ 
+     public void startConfiguration() {
+-        net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents.CONFIGURE.invoker().onSendConfiguration(this, server); // DomamaN202 - ServerConfigurationConnectionEvents
++        // DomamaN202 start - ServerConfigurationNetworkHandlerMixin impl
++        if (!this.sentConfiguration$Fabric) {
++            this.sentConfiguration$Fabric = true;
++            this.earlyTaskExecution$Fabric = true;
++        }
++        if (this.earlyTaskExecution$Fabric) {
++            if (this.pollEarlyTasks$Fabric()) {
++                return;
++            } else {
++                this.earlyTaskExecution$Fabric = false;
++            }
++        }
++        net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents.CONFIGURE.invoker().onSendConfiguration(this, server);
++        // DomamaN202 end - ServerConfigurationNetworkHandlerMixin impl
++
+         new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
+         this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
+         ServerLinks serverLinks = this.server.serverLinks();
+@@ -269,4 +283,49 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+         return paperConnection;
+     }
+     // Paper end
++
++    // DomamaN202 start - ServerConfigurationNetworkHandlerMixin impl
++    private boolean earlyTaskExecution$Fabric;
++    private boolean sentConfiguration$Fabric;
++
++    public void completeTask$Fabric(ConfigurationTask.Type key) {
++        if (!this.earlyTaskExecution$Fabric) {
++            this.finishCurrentTask(key);
++            return;
++        }
++
++        final ConfigurationTask.Type currentKey = this.currentTask != null ? this.currentTask.type() : null;
++
++        if (!key.equals(currentKey)) {
++            throw new IllegalStateException("Unexpected request for task finish, current task: " + currentKey + ", requested: " + key);
++        }
++
++        this.currentTask = null;
++        this.startConfiguration();
++    }
++
++    private boolean pollEarlyTasks$Fabric() {
++        if (!this.earlyTaskExecution$Fabric) {
++            throw new IllegalStateException("Early task execution has finished");
++        }
++
++        if (this.currentTask != null) {
++            throw new IllegalStateException("Task " + this.currentTask.type().id() + " has not finished yet");
++        }
++
++        if (!this.isAcceptingMessages()) {
++            return false;
++        }
++
++        final ConfigurationTask task = this.configurationTasks.poll();
++
++        if (task != null) {
++            this.currentTask = task;
++            task.start(this::send);
++            return true;
++        }
++
++        return false;
++    }
++    // DomamaN202 end - ServerConfigurationNetworkHandlerMixin impl
+ }
