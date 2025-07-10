@@ -9,7 +9,7 @@ import net.bettercombat.network.ServerNetwork;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 
-public class BetterCombatMod {  // todo: normal config loading
+public class BetterCombatMod {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final String ID = "bettercombat";
     public static final FullConfig config = new FullConfig();

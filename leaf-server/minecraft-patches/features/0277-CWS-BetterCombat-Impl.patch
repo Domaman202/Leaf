@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: DomamaN202 <vip.domaman@mail.ru>
-Date: Thu, 10 Jul 2025 08:30:47 +0700
+Date: Thu, 10 Jul 2025 09:18:32 +0700
 Subject: [PATCH] CWS - BetterCombat Impl
 
 
@@ -429,7 +429,7 @@ index 38edf089bac1de826cfc7e72384151ee25e46a95..ba9bd29cf5442d09253b2a01e92d02ea
      public long lastSave = MinecraftServer.currentTick; // Paper - Incremental chunk and player saving
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
 diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
-index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..785a1926406dc0d3dad1901dcf575e7e1fa9f6f6 100644
+index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..4c66bd0e23d4dc4250d30a36aa185bfb91d8405c 100644
 --- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 @@ -19,6 +19,7 @@ import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
@@ -480,20 +480,17 @@ index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..785a1926406dc0d3dad1901dcf575e7e
          new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
          this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
          ServerLinks serverLinks = this.server.serverLinks();
-@@ -260,6 +276,21 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+@@ -260,6 +276,18 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
  
      @Override
      public void handleCustomPayload(net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket packet) {
 +        // DomamaN202 start - DmNServerPlayNetworking
-+        LOGGER.warn("Custom payload: " + packet.payload().type().id());
 +        var play_handler = ru.cws.network.DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
-+        LOGGER.warn("Custom handler A: " + play_handler);
 +        if (play_handler != null) {
 +            ((ru.cws.network.DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), this.connection.getPlayer());
 +            return;
 +        }
 +        var config_handler = ru.cws.network.DmNServerPlayNetworking.CONFIG_HANDLERS.get(packet.payload().type().id());
-+        LOGGER.warn("Custom handler B: " + config_handler);
 +        if (config_handler != null) {
 +            ((ru.cws.network.DmNServerPlayNetworking.ConfigPayloadHandler<CustomPacketPayload>) config_handler).receive(packet.payload(), this, this.connection.getPlayer());
 +            return;
@@ -502,7 +499,7 @@ index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..785a1926406dc0d3dad1901dcf575e7e
          super.handleCustomPayload(packet);
      }
  
-@@ -268,4 +299,49 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+@@ -268,4 +296,49 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
          return paperConnection;
      }
      // Paper end
@@ -553,7 +550,7 @@ index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..785a1926406dc0d3dad1901dcf575e7e
 +    // DomamaN202 end - ServerConfigurationNetworkHandlerMixin impl
  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 09818ac59077a6a81f2f7c46d37d81b34e9ee3ab..23dc4698fccbe275b52dcaf372524ca113f702af 100644
+index 09818ac59077a6a81f2f7c46d37d81b34e9ee3ab..803e39d283b480557d8752284965f62ad4e50089 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -63,6 +63,7 @@ import net.minecraft.network.protocol.Packet;
@@ -621,14 +618,12 @@ index 09818ac59077a6a81f2f7c46d37d81b34e9ee3ab..23dc4698fccbe275b52dcaf372524ca1
                          } else {
                              this.player.setItemInHand(InteractionHand.OFF_HAND, CraftItemStack.asNMSCopy(swapItemsEvent.getOffHandItem()));
                          }
-@@ -3774,6 +3795,15 @@ public class ServerGamePacketListenerImpl
+@@ -3774,6 +3795,13 @@ public class ServerGamePacketListenerImpl
  
      @Override
      public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
 +        // DomamaN202 start - DmNServerPlayNetworking
-+        LOGGER.warn("Custom payload: " + packet.payload().type().id());
 +        var play_handler = ru.cws.network.DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
-+        LOGGER.warn("Custom handler A: " + play_handler);
 +        if (play_handler != null) {
 +            ((ru.cws.network.DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), this.connection.getPlayer());
 +            return;

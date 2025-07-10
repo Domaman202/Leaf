@@ -1,15 +1,15 @@
 package ru.cws;
 
+import com.mojang.logging.LogUtils;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import net.bettercombat.BetterCombatMod;
 import net.bettercombat.utils.SoundHelper;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 public class Main {
-    public static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public static void onEnable(JavaPlugin plugin) {
         LOGGER.info("CWS Invoked \"OnEnable\"");
