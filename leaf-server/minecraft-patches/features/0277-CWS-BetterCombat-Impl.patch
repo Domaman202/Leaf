@@ -346,7 +346,7 @@ index 98e27b3cea8ee8c0ba3445a3153bc228c104f3df..fed17c951458920ceca19be1d78681d7
      private final String path;
  
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index dd6ae338fa48d52962ee0af5b1572077ba6dff91..b33ddff0ca8a983db7dc10991f21e81ae0cb89ca 100644
+index dd6ae338fa48d52962ee0af5b1572077ba6dff91..450c8aa11775efb26bb704f50eae1cd42e2bc285 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -1,14 +1,11 @@
@@ -389,11 +389,11 @@ index dd6ae338fa48d52962ee0af5b1572077ba6dff91..b33ddff0ca8a983db7dc10991f21e81a
 +
 +
 +            // DomamaN202 start - Copy CWS Helper to plugin dir
-+            try (var input = ru.cws.Main.class.getResourceAsStream("/Leaf-CWS-Helper.jar")) {
++            try (var input = ru.cws.Main.class.getResourceAsStream("/Leaf-Helper-CWS.jar")) {
 +                if (input == null)
-+                    throw new FileNotFoundException("Could not find Leaf-CWS-Helper.jar");
++                    throw new FileNotFoundException("Could not find Leaf-Helper-CWS.jar");
 +                new File("./plugins").mkdir();
-+                try (var output = new FileOutputStream("./plugins/Leaf-CWS-Helper.jar")) {
++                try (var output = new FileOutputStream("./plugins/Leaf-Helper-CWS.jar")) {
 +                    output.write(input.readAllBytes());
 +                }
 +            }
