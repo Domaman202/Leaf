@@ -550,7 +550,7 @@ index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..4c66bd0e23d4dc4250d30a36aa185bfb
 +    // DomamaN202 end - ServerConfigurationNetworkHandlerMixin impl
  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 09818ac59077a6a81f2f7c46d37d81b34e9ee3ab..803e39d283b480557d8752284965f62ad4e50089 100644
+index 608324d13514063b48ae250d3aaf11c433438ce6..463a914c4b58b9f55d6ca4f73a03941ac3640748 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -63,6 +63,7 @@ import net.minecraft.network.protocol.Packet;
@@ -659,7 +659,7 @@ index 918cb68282ce179c6c3f5455f108501f7e965068..686a053dc11ab0515ed56ab4068c1dfd
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 6227791579f66a11fd20748bb822c6e477ad9197..bf2a3daa26650f3255a9227cdaf31d1a7658613c 100644
+index fdb6527c9d7e18c37e681ea2d8e4428ece49e2ff..48e56cf3d584ce673592cade0b3a16935e2077d8 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -225,7 +225,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
