@@ -3,10 +3,9 @@ package net.bettercombat;
 import com.mojang.logging.LogUtils;
 import net.bettercombat.config.FallbackConfig;
 import net.bettercombat.config.FullConfig;
-import net.bettercombat.config.ServerConfig;
 import net.bettercombat.logic.WeaponAttributesFallback;
 import net.bettercombat.logic.WeaponRegistry;
-import net.minecraft.server.MinecraftServer;
+import net.bettercombat.network.ServerNetwork;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 
@@ -16,6 +15,7 @@ public class BetterCombatMod {  // todo: normal config loading
     public static final FullConfig config = new FullConfig();
 
     public static void init(JavaPlugin plugin) {
+        ServerNetwork.init();
         loadConfig(plugin);
         loadWeaponAttributes(plugin);
     }

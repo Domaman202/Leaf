@@ -56,7 +56,6 @@ public class ServerNetwork {
         PayloadTypeRegistry.playC2S().register(Packets.C2S_BlockHit.PACKET_ID, Packets.C2S_BlockHit.CODEC);
 
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
-             System.out.println("Starting ConfigurationTask");
             var configJson = Packets.ConfigSync.serialize(BetterCombatMod.config.server);
             handler.configurationTasks.add(new ConfigurationTask(configJson));
         });
@@ -65,35 +64,28 @@ public class ServerNetwork {
             if (WeaponRegistry.getEncodedRegistry().chunks().isEmpty()) {
                 throw new AssertionError("Weapon registry is empty!");
             }
-             System.out.println("Starting WeaponRegistrySyncTask, chunks: " + WeaponRegistry.getEncodedRegistry().chunks().size());
             handler.configurationTasks.add(new WeaponRegistrySyncTask(WeaponRegistry.getEncodedRegistry()));
         });
 
         DmNServerPlayNetworking.registerGlobalConfigReceiver(Packets.Ack.PACKET_ID, (packet, listener, context) -> {
             // Warning: if you do not call completeTask, the client gets stuck!
-            System.out.println("Received Ack Packet " + packet.getClass().getSimpleName());
             if (packet.code().equals(ConfigurationTask.name)) {
-                System.out.println("Received Ack ConfigurationTask");
                 listener.completeTask$Fabric(ConfigurationTask.KEY);
             }
             if (packet.code().equals(WeaponRegistrySyncTask.name)) {
-                System.out.println("Received Ack WeaponRegistrySyncTask");
                 listener.completeTask$Fabric(WeaponRegistrySyncTask.KEY);
             }
         });
 
         DmNServerPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.PACKET_ID, (packet, player) -> {
-            System.out.println("PACKET ATTACK ANIMATION!!!");
             ServerNetwork.handleAttackAnimation(packet, player.server, player);
         });
 
         DmNServerPlayNetworking.registerGlobalReceiver(Packets.C2S_AttackRequest.PACKET_ID, (packet, player) -> {
-            System.out.println("PACKET ATTACK REQUEST!!!");
             ServerNetwork.handleAttackRequest(packet, player.server, player, player.connection);
         });
 
         DmNServerPlayNetworking.registerGlobalReceiver(Packets.C2S_BlockHit.PACKET_ID, (packet, player) -> {
-            System.out.println("PACKET BLOCK HIT!!!");
             ServerNetwork.handleBlockHit(packet, player.server, player);
         });
     }
@@ -104,7 +96,6 @@ public class ServerNetwork {
 
         @Override
         public void start(Consumer<Packet<?>> task) {
-            System.out.println("Configuration sync!");
             var packet = new Packets.ConfigSync(this.configString);
             task.accept(new ClientboundCustomPayloadPacket(packet));
         }
@@ -121,7 +112,6 @@ public class ServerNetwork {
 
         @Override
         public void start(Consumer<Packet<?>> task) {
-            System.out.println("Weapon registry sync!");
             var packet = new Packets.WeaponRegistrySync(encodedRegistry.compressed(), encodedRegistry.chunks());
             task.accept(new ClientboundCustomPayloadPacket(packet));
         }

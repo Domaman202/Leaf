@@ -25,7 +25,6 @@ public class PlatformImpl {
     }
 
     public static void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
-        System.out.println("Sended packet: " + payload);
         player.connection.send(new ClientboundCustomPayloadPacket(payload));
     }
 }

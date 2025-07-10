@@ -48,8 +48,7 @@ public class SoundHelper {
                 }
             });
         } catch (Exception e) {
-            System.out.println("Failed to play sound: " + sound.id());
-            e.printStackTrace();
+            BetterCombatMod.LOGGER.trace("Failed to play sound: {}", sound.id(), e);
         }
     }
 
