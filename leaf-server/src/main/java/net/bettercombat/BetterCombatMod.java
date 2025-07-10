@@ -16,23 +16,24 @@ public class BetterCombatMod {  // todo: normal config loading
     public static final FullConfig config = new FullConfig();
 
     public static void init(JavaPlugin plugin) {
-        loadFallbackConfig(plugin);
-        loadWeaponAttributes(MinecraftServer.getServer());
+        loadConfig(plugin);
+        loadWeaponAttributes(plugin);
     }
 
-    private static void loadWeaponAttributes(MinecraftServer server) {
-        WeaponRegistry.loadAttributes(server.getResourceManager());
+    private static void loadWeaponAttributes(JavaPlugin plugin) {
+        WeaponRegistry.loadAttributes(plugin);
         if (config.server.fallback_compatibility_enabled) {
             WeaponAttributesFallback.initialize();
         }
         WeaponRegistry.encodeRegistry();
     }
 
-    private static void loadFallbackConfig(JavaPlugin plugin) {
+    private static void loadConfig(JavaPlugin plugin) {
         var defaultConfig = FallbackConfig.createDefault();
         config.load(plugin);
-        if (config.fallback.schema_version < defaultConfig.schema_version)
+        if (config.fallback.schema_version < defaultConfig.schema_version) {
             config.fallback = FallbackConfig.migrate(config.fallback, defaultConfig);
-        config.save(plugin);
+            config.save(plugin, false, true);
+        }
     }
 }

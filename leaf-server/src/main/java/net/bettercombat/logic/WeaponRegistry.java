@@ -14,12 +14,13 @@ import net.bettercombat.network.Packets;
 import net.bettercombat.utils.CompressionHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,11 +64,14 @@ public class WeaponRegistry {
 
     // LOADING
 
-    public static void loadAttributes(ResourceManager resourceManager) {
-        loadContainers(resourceManager);
+    public static void loadAttributes(JavaPlugin plugin) {
+        // Копирование и загрузка данных из конфига
+        if (!new File(plugin.getDataFolder(), "config/bettercombat/attributes").exists())
+            copyData(plugin);
+        loadContainers(plugin);
 
         // Resolving parents
-        containers.forEach( (itemId, container) -> {
+        containers.forEach((itemId, container) -> {
             if (!BuiltInRegistries.ITEM.containsKey(itemId)) {
                 return;
             }
@@ -75,24 +79,62 @@ public class WeaponRegistry {
         });
     }
 
-    private static void loadContainers(ResourceManager resourceManager) {
+    private static void copyData(JavaPlugin plugin) {
+        BetterCombatMod.LOGGER.info("Saving \"attributes\" config");
+        for (var entry : MinecraftServer.getServer().getResourceManager().listResources("weapon_attributes", fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+            var file = entry.getKey().toString();
+            var i = file.indexOf(":");
+            file = plugin.getDataFolder().getAbsolutePath() + "/config/bettercombat/attributes/" + file.substring(0, i) + "/" + file.substring(file.indexOf("/", i) + 1);
+            new File(file.substring(0, file.lastIndexOf("/"))).mkdirs();
+            try (var output = new FileOutputStream(file)) {
+                try (var input = entry.getValue().open()) {
+                    output.write(input.readAllBytes());
+                }
+            } catch (IOException e) {
+                BetterCombatMod.LOGGER.trace("Config loading failed", e);
+            }
+        }
+    }
+
+    private static void loadContainers(JavaPlugin plugin) {
         Map<ResourceLocation, AttributesContainer> containers = new HashMap<>();
+
+//        // Reading all attribute files
+//        for (var entry : MinecraftServer.getServer().getResourceManager().listResources("weapon_attributes", fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+//            var identifier = entry.getKey();
+//            var resource = entry.getValue();
+//            try {
+////                LOGGER.info("Checking resource: " + identifier);
+//                JsonReader reader = new JsonReader(new InputStreamReader(resource.open()));
+//                AttributesContainer container = WeaponAttributesHelper.decode(reader);
+//                var id = identifier.toString().replace("weapon_attributes/", "");
+//                id = id.substring(0, id.lastIndexOf('.'));
+//                containers.put(ResourceLocation.parse(id), container);
+//                LOGGER.info("Loaded container: {}", id);
+//            } catch (Exception e) {
+//                LOGGER.error("Failed to parse: {}", identifier);
+//                e.printStackTrace();
+//            }
+//        }
+
         // Reading all attribute files
-        for (var entry : resourceManager.listResources("weapon_attributes", fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
-            var identifier = entry.getKey();
-            var resource = entry.getValue();
-            try {
-                LOGGER.info("Checking resource: " + identifier);
-                JsonReader reader = new JsonReader(new InputStreamReader(resource.open()));
-                AttributesContainer container = WeaponAttributesHelper.decode(reader);
-                var id = identifier
-                        .toString().replace("weapon_attributes/", "");
-                id = id.substring(0, id.lastIndexOf('.'));
-                containers.put(ResourceLocation.parse(id), container);
-                LOGGER.info("Loaded container: {}", id);
-            } catch (Exception e) {
-                LOGGER.error("Failed to parse: {}", identifier);
-                e.printStackTrace();
+        for (var dir : new File(plugin.getDataFolder().getAbsolutePath(), "config/bettercombat/attributes").listFiles()) {
+            for (var file : dir.listFiles()) {
+                var path = file.getAbsolutePath();
+                var i = path.lastIndexOf("/");
+                var identifier = path.substring(path.lastIndexOf("/", i - 1) + 1, i);
+                var resource = path.substring(i + 1, path.lastIndexOf("."));
+                try {
+//                    LOGGER.info("Checking resource: " + identifier);
+                    JsonReader reader = new JsonReader(new FileReader(file));
+                    AttributesContainer container = WeaponAttributesHelper.decode(reader);
+                    var id = ResourceLocation.fromNamespaceAndPath(identifier, resource);
+                    containers.put(id, container);
+                    LOGGER.info("Loaded container: {}", id);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse: {}", identifier);
+                    e.printStackTrace();
+                }
             }
         }
 
