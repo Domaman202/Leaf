@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
+import ru.cws.util.FileUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -84,8 +85,8 @@ public class WeaponRegistry {
         for (var entry : MinecraftServer.getServer().getResourceManager().listResources("weapon_attributes", fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
             var file = entry.getKey().toString();
             var i = file.indexOf(":");
-            file = plugin.getDataFolder().getAbsolutePath() + "/config/bettercombat/attributes/" + file.substring(0, i) + "/" + file.substring(file.indexOf("/", i) + 1);
-            new File(file.substring(0, file.lastIndexOf("/"))).mkdirs();
+            file = FileUtils.concatPath(plugin.getDataFolder().getAbsolutePath(), "config/bettercombat/attributes", file.substring(0, i), file.substring(FileUtils.indexOfSeparator(file, i) + 1));
+            new File(file.substring(0, FileUtils.lastIndexOfSeparator(file))).mkdirs();
             try (var output = new FileOutputStream(file)) {
                 try (var input = entry.getValue().open()) {
                     output.write(input.readAllBytes());
@@ -121,8 +122,8 @@ public class WeaponRegistry {
         for (var dir : new File(plugin.getDataFolder().getAbsolutePath(), "config/bettercombat/attributes").listFiles()) {
             for (var file : dir.listFiles()) {
                 var path = file.getAbsolutePath();
-                var i = path.lastIndexOf("/");
-                var identifier = path.substring(path.lastIndexOf("/", i - 1) + 1, i);
+                var i = FileUtils.lastIndexOfSeparator(path);
+                var identifier = path.substring(FileUtils.lastIndexOfSeparator(path, i - 1) + 1, i);
                 var resource = path.substring(i + 1, path.lastIndexOf("."));
                 try {
 //                    LOGGER.info("Checking resource: " + identifier);

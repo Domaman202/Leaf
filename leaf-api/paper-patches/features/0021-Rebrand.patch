@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Thu, 10 Jul 2025 12:16:28 +0700
+Subject: [PATCH] Rebrand
+
+
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+index c198304386e83edc2ec582fdf66d97d624004771..4333ba1ab5cc51f172c0678604a08a5d4729c360 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
+@@ -41,6 +41,13 @@ public interface ServerBuildInfo {
+     Key BRAND_LEAF_ID = Key.key("winds-studio", "leaf");
+     // Leaf end - Rebrand
+ 
++    // DomamaN202 start - Rebrand
++    /**
++     * The brand id for Leaf-CWS.
++     */
++    Key BRAND_LEAF_CWS_ID = Key.key("cws", "leaf-cws");
++    // DomamaN202 end - Rebrand
++
+     /**
+      * Gets the {@code ServerBuildInfo}.
+      *

@@ -18,6 +18,10 @@ public class Main {
 
     public static void onRegistersInit() {
         LOGGER.info("CWS Invoked \"OnRegistersInit\"");
+    }
+
+    public static void onSoundEventsInit() {
+        LOGGER.info("CWS Invoked \"OnSoundEventsInit\"");
         SoundHelper.registerSounds();
     }
 
