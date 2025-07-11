@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 
 public class ServerConfig {
     public long hits_reset_time = 1000;
+    public boolean reset_hits_after_miss = false;
     public float upswing_multiplier = 0.5F;
     public boolean allow_fast_attacks = true;
     public boolean allow_attacking_mount = false;

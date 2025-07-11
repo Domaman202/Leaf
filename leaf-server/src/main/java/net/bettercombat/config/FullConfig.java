@@ -22,6 +22,7 @@ public class FullConfig {
             } else {
                 var sc = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "config/bettercombat/server.yml"));
                 this.server.hits_reset_time = sc.getLong("hits_reset_time", this.server.hits_reset_time);
+                this.server.reset_hits_after_miss = sc.getBoolean("reset_hits_after_miss", this.server.reset_hits_after_miss);
                 this.server.upswing_multiplier = (float) sc.getDouble("upswing_multiplier", this.server.upswing_multiplier);
                 this.server.allow_fast_attacks = sc.getBoolean("allow_fast_attacks", this.server.allow_fast_attacks);
                 this.server.allow_attacking_mount = sc.getBoolean("allow_attacking_mount", this.server.allow_attacking_mount);
@@ -101,6 +102,7 @@ public class FullConfig {
 
     public void saveServer(YamlConfiguration sc) {
         sc.set("hits_reset_time", this.server.hits_reset_time);
+        sc.set("reset_hits_after_miss", this.server.reset_hits_after_miss);
         sc.set("upswing_multiplier", (double) this.server.upswing_multiplier);
         sc.set("allow_fast_attacks", this.server.allow_fast_attacks);
         sc.set("allow_attacking_mount", this.server.allow_attacking_mount);
