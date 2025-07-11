@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Fri, 11 Jul 2025 08:51:17 +0700
+Subject: [PATCH] Rebrand & fix
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
+index f59879ae7d3c73cd4c4233d30667988bf22f12f1..3ed7ed9410dd0432098f9c5b63c857d369fb2c48 100644
+--- a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
++++ b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
+@@ -20,7 +20,7 @@ public final class PaperConsole extends SimpleTerminalConsole {
+     @Override
+     protected LineReader buildReader(LineReaderBuilder builder) {
+         builder
+-                .appName("Leaf") // Gale - branding changes // Leaf - Rebrand
++                .appName("Leaf-CWS") // DomamaN202 - Rebrand
+                 .variable(LineReader.HISTORY_FILE, java.nio.file.Paths.get(".console_history"))
+                 .completer(new ConsoleCommandCompleter(this.server))
+                 .option(LineReader.Option.COMPLETE_IN_WORD, true);
+diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
+index 1f3db338ccd971547a9d0cc1a6329de3f7d01ac4..5edb1e8d66a85e8c22f6eda4eda1c69ec86eece6 100644
+--- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
++++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
+@@ -49,9 +49,9 @@ public record ServerBuildInfoImpl(
+         this(
+             getManifestAttribute(manifest, ATTRIBUTE_BRAND_ID)
+                 .map(Key::key)
+-                .orElse(BRAND_LEAF_CWS_ID), // Gale - branding changes // Leaf - Rebrand
++                .orElse(BRAND_LEAF_CWS_ID), // DomamaN202 - Rebrand
+             getManifestAttribute(manifest, ATTRIBUTE_BRAND_NAME)
+-                .orElse(BRAND_LEAF_CWS), // Gale - branding changes // DomamaN202 - Rebrand
++                .orElse(BRAND_LEAF_CWS), // DomamaN202 - Rebrand
+             SharedConstants.getCurrentVersion().id(),
+             SharedConstants.getCurrentVersion().name(),
+             getManifestAttribute(manifest, ATTRIBUTE_BUILD_NUMBER)
+@@ -74,7 +74,7 @@ public record ServerBuildInfoImpl(
+             || brandId.equals(BRAND_GALE_ID) // Gale - branding changes
+             || brandId.equals(BRAND_PUFFERFISH_ID)
+             || brandId.equals(BRAND_PURPUR_ID)
+-            || brandId.equals(BRAND_LEAF_ID); // DomamaN202 - branding changes
++            || brandId.equals(BRAND_LEAF_ID); // DomamaN202 - Rebrand
+             // Leaf end - Rebrand & Fix Pufferfish and Purpur patches
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
+index f6f787db016f4d1ac14648ebf2b8e162a3e85962..2b6f43648b4f892dee1962bbd77edc9aa19492c3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
++++ b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
+@@ -491,7 +491,7 @@ public class CraftScheduler implements BukkitScheduler {
+                 this.parsePending();
+             } else {
+                 // this.debugTail = this.debugTail.setNext(new CraftAsyncDebugger(this.currentTick + CraftScheduler.RECENT_TICKS, task.getOwner(), task.getTaskClass())); // Paper
+-                task.getOwner().getLogger().log(Level.SEVERE, "Unexpected Async Task in the Sync Scheduler. Report this to Leaf"); // Paper // Gale - branding changes // Leaf - Rebrand
++                task.getOwner().getLogger().log(Level.SEVERE, "Unexpected Async Task in the Sync Scheduler. Report this to Leaf-CWS"); // Paper // DomamaN202 - Rebrand
+                 // We don't need to parse pending
+                 // (async tasks must live with race-conditions if they attempt to cancel between these few lines of code)
+             }
+diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
+index e98279e78c9f5ddbd6dd0cdf48973453304b8e1c..4e7a94e0f8b321b283f50dedea82ec3460ad242b 100644
+--- a/src/main/java/org/spigotmc/WatchdogThread.java
++++ b/src/main/java/org/spigotmc/WatchdogThread.java
+@@ -80,15 +80,15 @@ public class WatchdogThread extends ca.spottedleaf.moonrise.common.util.TickThre
+                     We do not want people to report thread issues to Paper,
+                     but we do want people to report thread issues to Gale.
+                     */
+-                    logger.log(Level.SEVERE, "The server has stopped responding! This is (probably) not a Paper bug. This could be a Leaf bug."); // Paper // Leaf - Rebrand
++                    logger.log(Level.SEVERE, "The server has stopped responding! This is (probably) not a Paper bug. This could be a Leaf-CWS bug."); // Paper // DomamaN202 - Rebrand
+                     // Gale end - branding changes
+                     logger.log(Level.SEVERE, "If you see a plugin in the Server thread dump below, then please report it to that author");
+                     logger.log(Level.SEVERE, "\t *Especially* if it looks like HTTP or MySQL operations are occurring");
+                     logger.log(Level.SEVERE, "If you see a world save or edit, then it means you did far more than your server can handle at once");
+                     logger.log(Level.SEVERE, "\t If this is the case, consider increasing timeout-time in spigot.yml but note that this will replace the crash with LARGE lag spikes");
+-                    logger.log(Level.SEVERE, "If you are unsure or think this is a Leaf bug, please report this to https://github.com/Winds-Studio/Leaf/issues - and if you think this is a Paper bug, please report this to https://github.com/PaperMC/Paper/issues"); // Gale - branding changes // Leaf - Rebrand
++                    logger.log(Level.SEVERE, "If you are unsure or think this is a Leaf bug, please report this to https://github.com/Domaman202/Leaf-CWS/issues - and if you think this is a Paper bug, please report this to https://github.com/PaperMC/Paper/issues"); // DomamaN202 - Rebrand
+                     logger.log(Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports");
+-                    logger.log(Level.SEVERE, "Leaf version: " + Bukkit.getServer().getVersion()); // Gale - branding changes // Leaf - Rebrand
++                    logger.log(Level.SEVERE, "Leaf-CWS version: " + Bukkit.getServer().getVersion()); // DomamaN202 - Rebrand
+ 
+                     if (net.minecraft.world.level.Level.lastPhysicsProblem != null) {
+                         logger.log(Level.SEVERE, "------------------------------");
+@@ -113,13 +113,13 @@ public class WatchdogThread extends ca.spottedleaf.moonrise.common.util.TickThre
+                     We do not want people to report thread issues to Paper,
+                     but we do want people to report thread issues to Gale.
+                     */
+-                    logger.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - If you think this is a Leaf bug, please report it at https://github.com/Winds-Studio/Leaf/issues - THIS IS NOT A PAPER BUG OR CRASH - " + Bukkit.getServer().getVersion() + " ---"); // Leaf - Rebrand
++                    logger.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - If you think this is a Leaf bug, please report it at https://github.com/Domaman202/Leaf-CWS/issues - THIS IS NOT A PAPER BUG OR CRASH - " + Bukkit.getServer().getVersion() + " ---"); // DomamaN202 - Rebrand
+                     // Gale end - branding changes
+                     logger.log(Level.SEVERE, "The server has not responded for " + (currentTime - lastTick) / 1000 + " seconds! Creating thread dump");
+                 }
+                 // Paper end - Different message for short timeout
+                 logger.log(Level.SEVERE, "------------------------------");
+-                logger.log(Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Leaf!):"); // Paper // Gale - branding changes // Leaf - Rebrand
++                logger.log(Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Leaf-CWS!):"); // Paper // DomamaN202 - Rebrand
+                 FeatureHooks.dumpAllChunkLoadInfo(MinecraftServer.getServer(), isLongTimeout); // Paper - log detailed tick information
+                 WatchdogThread.dumpThread(ManagementFactory.getThreadMXBean().getThreadInfo(MinecraftServer.getServer().serverThread.threadId(), Integer.MAX_VALUE), logger);
+                 logger.log(Level.SEVERE, "------------------------------");
+@@ -152,7 +152,7 @@ public class WatchdogThread extends ca.spottedleaf.moonrise.common.util.TickThre
+                     We do not want people to report thread issues to Paper,
+                     but we do want people to report thread issues to Gale.
+                     */
+-                    logger.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - If you think this is a Leaf bug, please report it at https://github.com/Winds-Studio/Leaf/issues - THIS IS NOT A PAPER BUG OR CRASH ---"); // Leaf - Rebrand
++                    logger.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - If you think this is a Leaf bug, please report it at https://github.com/Domaman202/Leaf-CWS/issues - THIS IS NOT A PAPER BUG OR CRASH ---"); // Leaf - Rebrand
+                     // Gale end - branding changes
+                 }
+ 
