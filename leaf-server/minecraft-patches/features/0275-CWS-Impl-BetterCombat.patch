@@ -32,7 +32,7 @@ index 98e27b3cea8ee8c0ba3445a3153bc228c104f3df..58b71c605cdd07de8e84ac3e9ac49a6b
      private final String path;
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 38edf089bac1de826cfc7e72384151ee25e46a95..7b7f70454cbfe34a8eae25962a4c8d1397ab0da1 100644
+index 38edf089bac1de826cfc7e72384151ee25e46a95..a7cfe0e8c9bc282e02dc427125cfc53fb014454d 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -3,6 +3,8 @@ package net.minecraft.server.level;
@@ -166,30 +166,30 @@ index 38edf089bac1de826cfc7e72384151ee25e46a95..7b7f70454cbfe34a8eae25962a4c8d13
 +        }
 +    }
 +
-+    @Override
-+    public ItemStack getItemBySlot(EquipmentSlot slot) {
-+        var mainHandHasTwoHanded = false;
-+        var mainHandStack = super.getItemBySlot(EquipmentSlot.MAINHAND);
-+        var mainHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(mainHandStack);
-+        if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
-+            mainHandHasTwoHanded = true;
-+        }
-+
-+        var offHandHasTwoHanded = false;
-+        var offHandStack = super.getItemBySlot(EquipmentSlot.OFFHAND);
-+        var offHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(offHandStack);
-+        if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
-+            offHandHasTwoHanded = true;
-+        }
-+
-+        if (slot == EquipmentSlot.OFFHAND) {
-+            if (mainHandHasTwoHanded || offHandHasTwoHanded) {
-+                return (ItemStack.EMPTY);
-+            }
-+        }
-+
-+        return super.getItemBySlot(slot);
-+    }
++//    @Override
++//    public ItemStack getItemBySlot(EquipmentSlot slot) {
++//        var mainHandHasTwoHanded = false;
++//        var mainHandStack = super.getItemBySlot(EquipmentSlot.MAINHAND);
++//        var mainHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(mainHandStack);
++//        if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
++//            mainHandHasTwoHanded = true;
++//        }
++//
++//        var offHandHasTwoHanded = false;
++//        var offHandStack = super.getItemBySlot(EquipmentSlot.OFFHAND);
++//        var offHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(offHandStack);
++//        if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
++//            offHandHasTwoHanded = true;
++//        }
++//
++//        if (slot == EquipmentSlot.OFFHAND) {
++//            if (mainHandHasTwoHanded || offHandHasTwoHanded) {
++//                return (ItemStack.EMPTY);
++//            }
++//        }
++//
++//        return super.getItemBySlot(slot);
++//    }
 +
 +    @Override
 +    public InteractionHand getHand$BetterCombat() {
@@ -290,7 +290,7 @@ index 918cb68282ce179c6c3f5455f108501f7e965068..c3a0fcd48ef43c35238fc1399aa0e48c
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index fdb6527c9d7e18c37e681ea2d8e4428ece49e2ff..617dd258d3492b31f8321ec86edc5d02752a2823 100644
+index fdb6527c9d7e18c37e681ea2d8e4428ece49e2ff..0a858f29539d91280a222c4d7d014668a448884c 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -225,7 +225,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -302,6 +302,23 @@ index fdb6527c9d7e18c37e681ea2d8e4428ece49e2ff..617dd258d3492b31f8321ec86edc5d02
      public final WalkAnimationState walkAnimation = new WalkAnimationState();
      public int invulnerableDuration = 20;
      public float yBodyRot;
+@@ -290,6 +290,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     public int shieldBlockingDelay = this.level().paperConfig().misc.shieldBlockingDelay; // Paper - Make shield blocking delay configurable
+     protected boolean shouldBurnInDay = false; public boolean shouldBurnInDay() { return this.shouldBurnInDay; } public void setShouldBurnInDay(boolean shouldBurnInDay) { this.shouldBurnInDay = shouldBurnInDay; } // Purpur - API for any mob to burn daylight
+     // CraftBukkit end
++    public float customKnockbackMultiplier_BetterCombat = 1; // CWS - (BetterCombat) Attack system modify
+ 
+     protected LivingEntity(EntityType<? extends LivingEntity> entityType, Level level) {
+         super(entityType, level);
+@@ -2119,7 +2120,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
+     public void knockback(double strength, double x, double z, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause eventCause) { // Paper - knockback events
+         if (!canKnockback(attacker, this)) return; // Leaf - Configurable player knockback zombie
+ 
+-        strength *= 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
++        strength *= (1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)) * customKnockbackMultiplier_BetterCombat; // CWS - (BetterCombat) Attack system modify
+         if (true || !(strength <= 0.0)) { // CraftBukkit - Call event even when force is 0
+             // this.hasImpulse = true; // CraftBukkit - Move down
+             Vec3 deltaMovement = this.getDeltaMovement();
 diff --git a/net/minecraft/world/entity/TamableAnimal.java b/net/minecraft/world/entity/TamableAnimal.java
 index c9bd7212644b86be6eacdba2e12b6a19516bd2b6..7b06bff2676fd93afd81bfd24a5372d5841a3e9a 100644
 --- a/net/minecraft/world/entity/TamableAnimal.java
@@ -525,85 +542,50 @@ index 183874d90d576d740c5d924accc5c0d7fdb8450c..15887ca274b64e25bb070ff65fab5565
      }
 
 
-diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index 617dd258d3492b31f8321ec86edc5d02752a2823..0a858f29539d91280a222c4d7d014668a448884c 100644
---- a/net/minecraft/world/entity/LivingEntity.java
-+++ b/net/minecraft/world/entity/LivingEntity.java
-@@ -290,6 +290,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-     public int shieldBlockingDelay = this.level().paperConfig().misc.shieldBlockingDelay; // Paper - Make shield blocking delay configurable
-     protected boolean shouldBurnInDay = false; public boolean shouldBurnInDay() { return this.shouldBurnInDay; } public void setShouldBurnInDay(boolean shouldBurnInDay) { this.shouldBurnInDay = shouldBurnInDay; } // Purpur - API for any mob to burn daylight
-     // CraftBukkit end
-+    public float customKnockbackMultiplier_BetterCombat = 1; // CWS - (BetterCombat) Attack system modify
+diff --git a/net/minecraft/world/inventory/InventoryMenu.java b/net/minecraft/world/inventory/InventoryMenu.java
+index d4ff4db75544dfde4db925dc3dd702560c82d2b7..3a44917c7f3458def6135064ea0682d220bbd1e7 100644
+--- a/net/minecraft/world/inventory/InventoryMenu.java
++++ b/net/minecraft/world/inventory/InventoryMenu.java
+@@ -2,6 +2,8 @@ package net.minecraft.world.inventory;
 
-     protected LivingEntity(EntityType<? extends LivingEntity> entityType, Level level) {
-         super(entityType, level);
-@@ -2119,7 +2120,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
-     public void knockback(double strength, double x, double z, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause eventCause) { // Paper - knockback events
-         if (!canKnockback(attacker, this)) return; // Leaf - Configurable player knockback zombie
+ import java.util.List;
+ import java.util.Map;
++
++import net.bettercombat.logic.WeaponRegistry;
+ import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.Container;
+@@ -64,12 +66,33 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
--        strength *= 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-+        strength *= (1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)) * customKnockbackMultiplier_BetterCombat; // CWS - (BetterCombat) Attack system modify
-         if (true || !(strength <= 0.0)) { // CraftBukkit - Call event even when force is 0
-             // this.hasImpulse = true; // CraftBukkit - Move down
-             Vec3 deltaMovement = this.getDeltaMovement();
+         this.addStandardInventorySlots(playerInventory, 8, 84);
+         this.addSlot(new Slot(playerInventory, 40, 77, 62) {
++            @Override
++            public void setByPlayer(ItemStack stack) {
++                if (this.isActive()) {
++                    super.setByPlayer(stack);
++                }
++            }
++
+             @Override
+             public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+                 owner.onEquipItem(EquipmentSlot.OFFHAND, oldStack, newStack);
+                 super.setByPlayer(newStack, oldStack);
+             }
 
-
-diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 7b7f70454cbfe34a8eae25962a4c8d1397ab0da1..a7cfe0e8c9bc282e02dc427125cfc53fb014454d 100644
---- a/net/minecraft/server/level/ServerPlayer.java
-+++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -3267,30 +3267,30 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
-         }
-     }
-
--    @Override
--    public ItemStack getItemBySlot(EquipmentSlot slot) {
--        var mainHandHasTwoHanded = false;
--        var mainHandStack = super.getItemBySlot(EquipmentSlot.MAINHAND);
--        var mainHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(mainHandStack);
--        if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
--            mainHandHasTwoHanded = true;
--        }
--
--        var offHandHasTwoHanded = false;
--        var offHandStack = super.getItemBySlot(EquipmentSlot.OFFHAND);
--        var offHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(offHandStack);
--        if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
--            offHandHasTwoHanded = true;
--        }
--
--        if (slot == EquipmentSlot.OFFHAND) {
--            if (mainHandHasTwoHanded || offHandHasTwoHanded) {
--                return (ItemStack.EMPTY);
--            }
--        }
--
--        return super.getItemBySlot(slot);
--    }
-+//    @Override
-+//    public ItemStack getItemBySlot(EquipmentSlot slot) {
-+//        var mainHandHasTwoHanded = false;
-+//        var mainHandStack = super.getItemBySlot(EquipmentSlot.MAINHAND);
-+//        var mainHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(mainHandStack);
-+//        if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
-+//            mainHandHasTwoHanded = true;
-+//        }
-+//
-+//        var offHandHasTwoHanded = false;
-+//        var offHandStack = super.getItemBySlot(EquipmentSlot.OFFHAND);
-+//        var offHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(offHandStack);
-+//        if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
-+//            offHandHasTwoHanded = true;
-+//        }
-+//
-+//        if (slot == EquipmentSlot.OFFHAND) {
-+//            if (mainHandHasTwoHanded || offHandHasTwoHanded) {
-+//                return (ItemStack.EMPTY);
-+//            }
-+//        }
-+//
-+//        return super.getItemBySlot(slot);
-+//    }
-
-     @Override
-     public InteractionHand getHand$BetterCombat() {
++            @Override
++            public ItemStack getItem() {
++                if (this.isActive())
++                    return super.getItem();
++                return ItemStack.EMPTY;
++            }
++
++            @Override
++            public boolean isActive() {
++                var mainHandStack = ((Inventory) this.container).getSelectedItem();
++                var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
++                return mainHandAttributes == null || !mainHandAttributes.isTwoHanded();
++            }
++
+             @Override
+             public ResourceLocation getNoItemIcon() {
+                 return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
