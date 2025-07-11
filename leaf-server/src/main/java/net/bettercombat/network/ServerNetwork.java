@@ -10,7 +10,6 @@ import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
 import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.WeaponRegistry;
-import net.bettercombat.logic.knockback.ConfigurableKnockback;
 import net.bettercombat.utils.AttributeModifierHelper;
 import net.bettercombat.utils.MathHelper;
 import net.bettercombat.utils.SoundHelper;
@@ -247,7 +246,7 @@ public class ServerNetwork {
                             livingEntity.invulnerableTime = 0;
                         }
                         if (knockbackMultiplier != 1F) {
-                            ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_BetterCombat(knockbackMultiplier);
+                            livingEntity.customKnockbackMultiplier_BetterCombat = knockbackMultiplier;
                         }
                     }
                     player.attackStrengthTicker = lastAttackedTicks;
@@ -270,7 +269,7 @@ public class ServerNetwork {
                     }
                     if (entity instanceof LivingEntity livingEntity) {
                         if (knockbackMultiplier != 1F) {
-                            ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_BetterCombat(1F);
+                            livingEntity.customKnockbackMultiplier_BetterCombat = 1F;
                         }
                     }
                 }
