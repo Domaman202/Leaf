@@ -1,0 +1,491 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DomamaN202 <vip.domaman@mail.ru>
+Date: Fri, 11 Jul 2025 10:53:50 +0700
+Subject: [PATCH] CWS-Impl (Network / Event)
+
+
+diff --git a/net/minecraft/core/registries/BuiltInRegistries.java b/net/minecraft/core/registries/BuiltInRegistries.java
+index ed30a7f9ec46cf89157512cc4fe51babc43251cd..2fb194386af7aa90bd71280032db9054884d234f 100644
+--- a/net/minecraft/core/registries/BuiltInRegistries.java
++++ b/net/minecraft/core/registries/BuiltInRegistries.java
+@@ -429,4 +429,12 @@ public class BuiltInRegistries {
+     interface RegistryBootstrap<T> {
+         Object run(Registry<T> registry);
+     }
++
++
++
++    // CWS start - EventAPI Impl
++    static {
++        ru.cws.Main.onRegistersInit();
++    }
++    // CWS end - EventAPI Impl
+ }
+diff --git a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+index 1c5a065dd95b4292e1ec06db831791bbfb88e4ca..4e6eea99818a64d6b3e62070a900a640afc7b438 100644
+--- a/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket.java
+@@ -33,38 +33,43 @@ import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
+ 
+ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ClientCommonPacketListener> {
+     private static final int MAX_PAYLOAD_SIZE = 1048576;
+-    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = CustomPacketPayload.<RegistryFriendlyByteBuf>codec(
+-            location -> DiscardedPayload.codec(location, 1048576),
+-            Util.make(
+-                Lists.newArrayList(
+-                    new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BeeDebugPayload.TYPE, BeeDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BrainDebugPayload.TYPE, BrainDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(BreezeDebugPayload.TYPE, BreezeDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameEventDebugPayload.TYPE, GameEventDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameEventListenerDebugPayload.TYPE, GameEventListenerDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameTestAddMarkerDebugPayload.TYPE, GameTestAddMarkerDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GameTestClearMarkersDebugPayload.TYPE, GameTestClearMarkersDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(GoalDebugPayload.TYPE, GoalDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(HiveDebugPayload.TYPE, HiveDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(NeighborUpdatesDebugPayload.TYPE, NeighborUpdatesDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PathfindingDebugPayload.TYPE, PathfindingDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiAddedDebugPayload.TYPE, PoiAddedDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiRemovedDebugPayload.TYPE, PoiRemovedDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(PoiTicketCountDebugPayload.TYPE, PoiTicketCountDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(RaidsDebugPayload.TYPE, RaidsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(RedstoneWireOrientationsDebugPayload.TYPE, RedstoneWireOrientationsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(StructuresDebugPayload.TYPE, StructuresDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(VillageSectionsDebugPayload.TYPE, VillageSectionsDebugPayload.STREAM_CODEC),
+-                    new CustomPacketPayload.TypeAndCodec<>(WorldGenAttemptDebugPayload.TYPE, WorldGenAttemptDebugPayload.STREAM_CODEC)
+-                ),
+-                list -> {}
+-            )
++    // CWS start - NetworkAPI Impl
++    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = wrapPlayCodec$Fabric(CustomPacketPayload.<RegistryFriendlyByteBuf>codec(
++        location -> DiscardedPayload.codec(location, 1048576),
++        Util.make(
++            Lists.newArrayList(
++                new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(BeeDebugPayload.TYPE, BeeDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(BrainDebugPayload.TYPE, BrainDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(BreezeDebugPayload.TYPE, BreezeDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(GameEventDebugPayload.TYPE, GameEventDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(GameEventListenerDebugPayload.TYPE, GameEventListenerDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(GameTestAddMarkerDebugPayload.TYPE, GameTestAddMarkerDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(GameTestClearMarkersDebugPayload.TYPE, GameTestClearMarkersDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(GoalDebugPayload.TYPE, GoalDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(HiveDebugPayload.TYPE, HiveDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(NeighborUpdatesDebugPayload.TYPE, NeighborUpdatesDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(PathfindingDebugPayload.TYPE, PathfindingDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(PoiAddedDebugPayload.TYPE, PoiAddedDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(PoiRemovedDebugPayload.TYPE, PoiRemovedDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(PoiTicketCountDebugPayload.TYPE, PoiTicketCountDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(RaidsDebugPayload.TYPE, RaidsDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(RedstoneWireOrientationsDebugPayload.TYPE, RedstoneWireOrientationsDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(StructuresDebugPayload.TYPE, StructuresDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(VillageSectionsDebugPayload.TYPE, VillageSectionsDebugPayload.STREAM_CODEC),
++                new CustomPacketPayload.TypeAndCodec<>(WorldGenAttemptDebugPayload.TYPE, WorldGenAttemptDebugPayload.STREAM_CODEC)
++            ),
++            list -> {}
+         )
++    ))
++        // CWS end - NetworkAPI Impl
+         .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+-    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayload.<FriendlyByteBuf>codec(
+-            id -> DiscardedPayload.codec(id, 1048576), List.of(new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
+-        )
++
++    // CWS start - NetworkAPI Impl
++    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = wrapConfigCodec$Fabric(CustomPacketPayload.<FriendlyByteBuf>codec(
++        id -> DiscardedPayload.codec(id, 1048576), List.of(new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
++    ))
++        // CWS end - NetworkAPI Impl
+         .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+ 
+     @Override
+@@ -76,4 +81,18 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implem
+     public void handle(ClientCommonPacketListener handler) {
+         handler.handleCustomPayload(this);
+     }
++
++    // CWS start - NetworkAPI Impl
++    private static StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> wrapPlayCodec$Fabric(StreamCodec<RegistryFriendlyByteBuf, CustomPacketPayload> codec) {
++        var fabricCodec = (net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec<RegistryFriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl.PLAY_S2C.get(identifier));
++        return codec;
++    }
++
++    private static StreamCodec<FriendlyByteBuf, CustomPacketPayload> wrapConfigCodec$Fabric(StreamCodec<FriendlyByteBuf, CustomPacketPayload> codec) {
++        var fabricCodec = (net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl.CONFIGURATION_S2C.get(identifier));
++        return codec;
++    }
++    // CWS end - NetworkAPI Impl
+ }
+diff --git a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+index 2488e58d23d28cf3e2f582f4495b7303bcad0718..1b30308e3f34090637864b2798f809646ee4931b 100644
+--- a/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
++++ b/net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket.java
+@@ -1,21 +1,20 @@
+ package net.minecraft.network.protocol.common;
+ 
+-import com.google.common.collect.Lists;
+-import net.minecraft.Util;
+ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.codec.StreamCodec;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.PacketType;
+-import net.minecraft.network.protocol.common.custom.BrandPayload;
+ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+ 
+ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ServerCommonPacketListener> {
+     private static final int MAX_PAYLOAD_SIZE = 32767;
+-    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC = CustomPacketPayload.<FriendlyByteBuf>codec(
+-            id -> DiscardedPayload.codec(id, 32767),
+-            java.util.Collections.emptyList() // CraftBukkit - treat all packets the same
+-        )
++    // CWS start - NetworkAPI Impl
++    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC = wrapCodec$Fabric(CustomPacketPayload.<FriendlyByteBuf>codec(
++        id -> DiscardedPayload.codec(id, 32767),
++        java.util.Collections.emptyList() // CraftBukkit - treat all packets the same
++    ))
++        // CWS end - NetworkAPI Impl
+         .map(ServerboundCustomPayloadPacket::new, ServerboundCustomPayloadPacket::payload);
+ 
+     @Override
+@@ -27,4 +26,17 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
+     public void handle(ServerCommonPacketListener handler) {
+         handler.handleCustomPayload(this);
+     }
++
++    // CWS start - NetworkAPI Impl
++    private static StreamCodec<FriendlyByteBuf, CustomPacketPayload> wrapCodec$Fabric(StreamCodec<FriendlyByteBuf, CustomPacketPayload> codec) {
++        var fabricCodec = (net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec<FriendlyByteBuf>) codec;
++        fabricCodec.fabric_setPacketCodecProvider((packetByteBuf, identifier) -> {
++            if (packetByteBuf instanceof net.minecraft.network.RegistryFriendlyByteBuf) {
++                return (CustomPacketPayload.TypeAndCodec<FriendlyByteBuf, ? extends CustomPacketPayload>) (Object) net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl.PLAY_C2S.get(identifier);
++            }
++            return net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl.CONFIGURATION_C2S.get(identifier);
++        });
++        return codec;
++    }
++    // CWS end - NetworkAPI Impl
+ }
+diff --git a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+index d2f522ea6d0a209496848af073c9af1c45d6b6ce..dee74a6319dc7536b7b8985d68f8c8a54a8c659b 100644
+--- a/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
++++ b/net/minecraft/network/protocol/common/custom/CustomPacketPayload.java
+@@ -3,6 +3,7 @@ package net.minecraft.network.protocol.common.custom;
+ import io.netty.buffer.ByteBuf;
+ import java.util.List;
+ import java.util.Map;
++import java.util.function.Supplier;
+ import java.util.stream.Collectors;
+ import net.minecraft.network.FriendlyByteBuf;
+ import net.minecraft.network.codec.StreamCodec;
+@@ -26,45 +27,77 @@ public interface CustomPacketPayload {
+     ) {
+         final Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map = typeAndCodecs.stream()
+             .collect(Collectors.toUnmodifiableMap(typeAndCodec -> typeAndCodec.type().id(), CustomPacketPayload.TypeAndCodec::codec));
+-        return new StreamCodec<B, CustomPacketPayload>() {
+-            private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation resourceLocation) {
+-                StreamCodec<? super B, ? extends CustomPacketPayload> streamCodec = map.get(resourceLocation);
+-                return streamCodec != null ? streamCodec : fallbackProvider.create(resourceLocation);
+-            }
++        // CWS start - NetworkAPI Impl
++        return new InternalCodec(fallbackProvider, map);
++    }
++
++    public class InternalCodec<B extends  FriendlyByteBuf> implements StreamCodec<B, CustomPacketPayload>, net.fabricmc.fabric.impl.networking.FabricCustomPayloadPacketCodec<B> {
++        private final FallbackProvider<B> fallbackProvider;
++        private final Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map;
++        private net.fabricmc.fabric.impl.networking.CustomPayloadTypeProvider<B> customPayloadTypeProvider;
+ 
+-            private <T extends CustomPacketPayload> void writeCap(B buffer, CustomPacketPayload.Type<T> type, CustomPacketPayload payload) {
+-                buffer.writeResourceLocation(type.id());
+-                StreamCodec<B, T> streamCodec = (StreamCodec<B, T>) this.findCodec(type.id);
+-                streamCodec.encode(buffer, (T)payload);
++        public InternalCodec(FallbackProvider<B> fallbackProvider, Map<ResourceLocation, StreamCodec<? super B, ? extends CustomPacketPayload>> map) {
++            this.fallbackProvider = fallbackProvider;
++            this.map = map;
++        }
++
++        @Override
++        public void fabric_setPacketCodecProvider(net.fabricmc.fabric.impl.networking.CustomPayloadTypeProvider<B> customPayloadTypeProvider) {
++            if (this.customPayloadTypeProvider != null) {
++                throw new IllegalStateException("Payload codec provider is already set!");
+             }
+ 
+-            @Override
+-            public void encode(B buffer, CustomPacketPayload value) {
+-                // Leaves start - protocol core
+-                if (value instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload payload) {
+-                    org.leavesmc.leaves.protocol.core.LeavesProtocolManager.encode(buffer, payload);
+-                    return;
+-                }
+-                // Leaves end - protocol core
+-                // Leaf start - Protocol core
+-                if (value instanceof org.dreeam.leaf.protocol.LeafCustomPayload payload) {
+-                    org.dreeam.leaf.protocol.Protocols.write(buffer, payload);
+-                    return;
++            this.customPayloadTypeProvider = customPayloadTypeProvider;
++        }
++
++        public <T extends CustomPacketPayload> StreamCodec<B, T> wrapGetCodec$Fabric(ResourceLocation identifier, Supplier<StreamCodec<B, T>> original, B packetByteBuf) {
++            if (customPayloadTypeProvider != null) {
++                TypeAndCodec<B, T> payloadType = (TypeAndCodec<B, T>) customPayloadTypeProvider.get(packetByteBuf, identifier);
++                if (payloadType != null) {
++                    return payloadType.codec();
+                 }
+-                // Leaf end - Protocol core
+-                this.writeCap(buffer, value.type(), value);
+             }
++            return original.get();
++        }
++
++        private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation resourceLocation) {
++            StreamCodec<? super B, ? extends CustomPacketPayload> streamCodec = map.get(resourceLocation);
++            return streamCodec != null ? streamCodec : fallbackProvider.create(resourceLocation);
++        }
++
++        private <T extends CustomPacketPayload> void writeCap(B buffer, Type<T> type, CustomPacketPayload payload) {
++            buffer.writeResourceLocation(type.id());
++            StreamCodec<B, T> streamCodec = wrapGetCodec$Fabric(type.id, () -> (StreamCodec<B, T>) this.findCodec(type.id), buffer);
++            streamCodec.encode(buffer, (T)payload);
++        }
+ 
+-            @Override
+-            public CustomPacketPayload decode(B buffer) {
+-                ResourceLocation resourceLocation = buffer.readResourceLocation();
+-                // Leaves start - protocol core
+-                var payload = org.leavesmc.leaves.protocol.core.LeavesProtocolManager.decode(resourceLocation, buffer);
+-                return java.util.Objects.requireNonNullElseGet(payload, () -> this.findCodec(resourceLocation).decode(buffer));
+-                // Leaves end - protocol core
++        @Override
++        public void encode(B buffer, CustomPacketPayload value) {
++            // Leaves start - protocol core
++            if (value instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload payload) {
++                org.leavesmc.leaves.protocol.core.LeavesProtocolManager.encode(buffer, payload);
++                return;
+             }
+-        };
++            // Leaves end - protocol core
++            // Leaf start - Protocol core
++            if (value instanceof org.dreeam.leaf.protocol.LeafCustomPayload payload) {
++                org.dreeam.leaf.protocol.Protocols.write(buffer, payload);
++                return;
++            }
++            // Leaf end - Protocol core
++            this.writeCap(buffer, value.type(), value);
++        }
++
++        @Override
++        public CustomPacketPayload decode(B buffer) {
++            ResourceLocation resourceLocation = buffer.readResourceLocation();
++            // Leaves start - protocol core
++            var payload = org.leavesmc.leaves.protocol.core.LeavesProtocolManager.decode(resourceLocation, buffer);
++            return java.util.Objects.requireNonNullElseGet(payload, () -> wrapGetCodec$Fabric(resourceLocation, () -> (StreamCodec<B, CustomPacketPayload>) this.findCodec(resourceLocation), buffer).decode(buffer));
++            // Leaves end - protocol core
++        }
+     }
++    // CWS end - NetworkAPI Impl
+ 
+     public interface FallbackProvider<B extends FriendlyByteBuf> {
+         StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation id);
+diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
+index dd6ae338fa48d52962ee0af5b1572077ba6dff91..df9c96457baf2accca792a198f6378c030e9300c 100644
+--- a/net/minecraft/server/Main.java
++++ b/net/minecraft/server/Main.java
+@@ -6,9 +6,7 @@ import com.mojang.logging.LogUtils;
+ import com.mojang.serialization.Dynamic;
+ import com.mojang.serialization.Lifecycle;
+ import java.awt.GraphicsEnvironment;
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.UncheckedIOException;
++import java.io.*;
+ import java.net.Proxy;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+@@ -115,6 +113,17 @@ public class Main {
+             org.purpurmc.purpur.PurpurConfig.registerMinecraftDebugCommands = purpurConfiguration.getBoolean("settings.register-minecraft-debug-commands"); // Purpur - register minecraft debug commands
+             // Purpur end - Add toggle for enchant level clamping - load config files early
+ 
++            // CWS start - Helper plugin copy
++            try (var input = ru.cws.Main.class.getResourceAsStream("/Leaf-Helper-CWS.jar")) {
++                if (input == null)
++                    throw new FileNotFoundException("Could not find Leaf-Helper-CWS.jar");
++                new File("./plugins").mkdir();
++                try (var output = new FileOutputStream("./plugins/Leaf-Helper-CWS.jar")) {
++                    output.write(input.readAllBytes());
++                }
++            }
++            // CWS end - Helper plugin copy
++
+             org.dreeam.leaf.config.LeafConfig.loadConfig(); // Leaf - Leaf config
+             io.papermc.paper.plugin.PluginInitializerManager.load(optionSet); // Paper
+             Bootstrap.bootStrap();
+diff --git a/net/minecraft/server/level/ChunkMap.java b/net/minecraft/server/level/ChunkMap.java
+index 0a97a491737807d59815b75635fa3d8c94901ba8..c294e688aaeb78d0b6711c39d64a3d1adcb677f4 100644
+--- a/net/minecraft/server/level/ChunkMap.java
++++ b/net/minecraft/server/level/ChunkMap.java
+@@ -1166,7 +1166,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+         SectionPos lastSectionPos;
+         // Leaf start - Multithreaded tracker
+         public static final ServerPlayerConnection[] EMPTY_OBJECT_ARRAY = new ServerPlayerConnection[0];
+-        private final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<ServerPlayerConnection> nonSyncSeenBy = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>() {
++        public final it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<ServerPlayerConnection> nonSyncSeenBy = new it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet<>() { // CWS - NetworkAPI Impl
+             @Override
+             public boolean add(ServerPlayerConnection serverPlayerConnection) {
+                 seenByUpdated = true;
+diff --git a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..0bc8c8c8eb513cd25094d2144ea98928d5eddb67 100644
+--- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
+ import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
+ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
+ import net.minecraft.network.protocol.common.custom.BrandPayload;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
+ import net.minecraft.network.protocol.configuration.ServerConfigurationPacketListener;
+ import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
+@@ -41,7 +42,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+     private static final Logger LOGGER = LogUtils.getLogger();
+     private static final Component DISCONNECT_REASON_INVALID_DATA = Component.translatable("multiplayer.disconnect.invalid_player_data");
+     private final GameProfile gameProfile;
+-    private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue<>();
++    public final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue<>(); // CWS - NetworkAPI Impl
+     @Nullable
+     public ConfigurationTask currentTask;
+     public ClientInformation clientInformation;
+@@ -90,6 +91,21 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+     }
+ 
+     public void startConfiguration() {
++        // CWS start - NetworkAPI Impl
++        if (!this.sentConfiguration$Fabric) {
++            this.sentConfiguration$Fabric = true;
++            this.earlyTaskExecution$Fabric = true;
++        }
++        if (this.earlyTaskExecution$Fabric) {
++            if (this.pollEarlyTasks$Fabric()) {
++                return;
++            } else {
++                this.earlyTaskExecution$Fabric = false;
++            }
++        }
++        net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents.CONFIGURE.invoker().onSendConfiguration(this, server);
++        // CWS end - NetworkAPI Impl
++
+         new io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigureEvent(this.paperConnection).callEvent(); // Paper
+         this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
+         ServerLinks serverLinks = this.server.serverLinks();
+@@ -260,6 +276,19 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+ 
+     @Override
+     public void handleCustomPayload(net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket packet) {
++        // CWS start - NetworkAPI Impl
++        var play_handler = ru.cws.network.DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
++        if (play_handler != null) {
++            ((ru.cws.network.DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), this.connection.getPlayer());
++            return;
++        }
++        var config_handler = ru.cws.network.DmNServerPlayNetworking.CONFIG_HANDLERS.get(packet.payload().type().id());
++        if (config_handler != null) {
++            ((ru.cws.network.DmNServerPlayNetworking.ConfigPayloadHandler<CustomPacketPayload>) config_handler).receive(packet.payload(), this, this.connection.getPlayer());
++            return;
++        }
++        // CWS end - NetworkAPI Impl
++
+         super.handleCustomPayload(packet);
+     }
+ 
+@@ -268,4 +297,49 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
+         return paperConnection;
+     }
+     // Paper end
++
++    // CWS start - NetworkAPI Impl
++    private boolean earlyTaskExecution$Fabric;
++    private boolean sentConfiguration$Fabric;
++
++    public void completeTask$Fabric(ConfigurationTask.Type key) {
++        if (!this.earlyTaskExecution$Fabric) {
++            this.finishCurrentTask(key);
++            return;
++        }
++
++        final ConfigurationTask.Type currentKey = this.currentTask != null ? this.currentTask.type() : null;
++
++        if (!key.equals(currentKey)) {
++            throw new IllegalStateException("Unexpected request for task finish, current task: " + currentKey + ", requested: " + key);
++        }
++
++        this.currentTask = null;
++        this.startConfiguration();
++    }
++
++    private boolean pollEarlyTasks$Fabric() {
++        if (!this.earlyTaskExecution$Fabric) {
++            throw new IllegalStateException("Early task execution has finished");
++        }
++
++        if (this.currentTask != null) {
++            throw new IllegalStateException("Task " + this.currentTask.type().id() + " has not finished yet");
++        }
++
++        if (!this.isAcceptingMessages()) {
++            return false;
++        }
++
++        final ConfigurationTask task = this.configurationTasks.poll();
++
++        if (task != null) {
++            this.currentTask = task;
++            task.start(this::send);
++            return true;
++        }
++
++        return false;
++    }
++    // CWS end - NetworkAPI Impl
+ }
+diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 608324d13514063b48ae250d3aaf11c433438ce6..08ef4aa1b90f1313506609d575faf11badecf8dd 100644
+--- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -63,6 +63,7 @@ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.PacketUtils;
+ import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
+ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
++import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+ import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+ import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
+ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+@@ -3774,6 +3775,13 @@ public class ServerGamePacketListenerImpl
+ 
+     @Override
+     public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
++        // CWS start - NetworkAPI Impl
++        var play_handler = ru.cws.network.DmNServerPlayNetworking.PLAY_HANDLERS.get(packet.payload().type().id());
++        if (play_handler != null) {
++            ((ru.cws.network.DmNServerPlayNetworking.PlayPayloadHandler<CustomPacketPayload>) play_handler).receive(packet.payload(), this.connection.getPlayer());
++            return;
++        }
++        // CWS end - NetworkAPI Impl
+         // Leaves start - protocol
+         if (packet.payload() instanceof org.leavesmc.leaves.protocol.core.LeavesCustomPayload leavesPayload) {
+             org.leavesmc.leaves.protocol.core.LeavesProtocolManager.handlePayload(player, leavesPayload);
+diff --git a/net/minecraft/sounds/SoundEvents.java b/net/minecraft/sounds/SoundEvents.java
+index f08f8428db65eb5a462fd625a8f8c160dc37cc8f..398345be7be8230f0dae2f962457d42ca5ea36a8 100644
+--- a/net/minecraft/sounds/SoundEvents.java
++++ b/net/minecraft/sounds/SoundEvents.java
+@@ -1746,4 +1746,10 @@ public class SoundEvents {
+                 )
+             );
+     }
++
++    // CWS start - EventAPI Impl
++    static {
++        ru.cws.Main.onSoundEventsInit();
++    }
++    // CWS end - EventAPI Impl
+ }
