@@ -90,13 +90,12 @@ index 38edf089bac1de826cfc7e72384151ee25e46a95..a7cfe0e8c9bc282e02dc427125cfc53f
      private static final Logger LOGGER = LogUtils.getLogger();
      public long lastSave = MinecraftServer.currentTick; // Paper - Incremental chunk and player saving
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
-@@ -809,6 +812,14 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -809,6 +812,13 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          }
          // Purpur end - Ridables
          org.dreeam.leaf.protocol.Protocols.tickPlayer(this); // Leaf - Protocol core
 +
 +        // CWS start - (BetterCombat) Player animation
-+        super.tick();
 +        var pose = net.bettercombat.logic.PlayerAttackHelper.poseForPlayer(this);
 +        this.entityData.set(BETTER_COMBAT_MAIN_IDLE_ANIMATION, pose.base());
 +        this.entityData.set(BETTER_COMBAT_OFF_IDLE_ANIMATION, pose.offHand());
