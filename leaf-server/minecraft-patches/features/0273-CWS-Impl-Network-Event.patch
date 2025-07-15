@@ -290,7 +290,7 @@ index d2f522ea6d0a209496848af073c9af1c45d6b6ce..dee74a6319dc7536b7b8985d68f8c8a5
      public interface FallbackProvider<B extends FriendlyByteBuf> {
          StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation id);
 diff --git a/net/minecraft/server/Main.java b/net/minecraft/server/Main.java
-index dd6ae338fa48d52962ee0af5b1572077ba6dff91..df9c96457baf2accca792a198f6378c030e9300c 100644
+index 4134679c838307de7ae410cfc727fada0eeebf6b..e073f829872a413bc855b2bd02983224a527d1ea 100644
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -6,9 +6,7 @@ import com.mojang.logging.LogUtils;
@@ -304,8 +304,8 @@ index dd6ae338fa48d52962ee0af5b1572077ba6dff91..df9c96457baf2accca792a198f6378c0
  import java.net.Proxy;
  import java.nio.file.Files;
  import java.nio.file.Path;
-@@ -115,6 +113,17 @@ public class Main {
-             org.purpurmc.purpur.PurpurConfig.registerMinecraftDebugCommands = purpurConfiguration.getBoolean("settings.register-minecraft-debug-commands"); // Purpur - register minecraft debug commands
+@@ -116,6 +114,17 @@ public class Main {
+             org.purpurmc.purpur.PurpurConfig.registerMinecraftDisabledCommands = purpurConfiguration.getBoolean("settings.register-minecraft-disabled-commands"); // Purpur - register disabled minecraft commands
              // Purpur end - Add toggle for enchant level clamping - load config files early
  
 +            // CWS start - Helper plugin copy
@@ -449,7 +449,7 @@ index 25c6e9f1b88ea7bfa2c7f1d130d56c581202960e..0bc8c8c8eb513cd25094d2144ea98928
 +    // CWS end - NetworkAPI Impl
  }
 diff --git a/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 608324d13514063b48ae250d3aaf11c433438ce6..08ef4aa1b90f1313506609d575faf11badecf8dd 100644
+index 25871b2db4888d8729f2dd64fdac16dc6eecc5e9..5e1d0661e2c49d85940fd37e671a5b717a6bce31 100644
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -63,6 +63,7 @@ import net.minecraft.network.protocol.Packet;
@@ -460,7 +460,7 @@ index 608324d13514063b48ae250d3aaf11c433438ce6..08ef4aa1b90f1313506609d575faf11b
  import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
  import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
  import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-@@ -3774,6 +3775,13 @@ public class ServerGamePacketListenerImpl
+@@ -3716,6 +3717,13 @@ public class ServerGamePacketListenerImpl
  
      @Override
      public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {

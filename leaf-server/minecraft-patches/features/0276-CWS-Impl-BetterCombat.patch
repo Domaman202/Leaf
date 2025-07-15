@@ -32,7 +32,7 @@ index 98e27b3cea8ee8c0ba3445a3153bc228c104f3df..58b71c605cdd07de8e84ac3e9ac49a6b
      private final String path;
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 38edf089bac1de826cfc7e72384151ee25e46a95..4681cbdf246d5e45ffbfb46d3e6612df50067861 100644
+index a16607c165965a7c325909ded75a3cf65440f6f7..ddbd62ec2c99659203845857ed063246693a976f 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -3,6 +3,8 @@ package net.minecraft.server.level;
@@ -104,7 +104,7 @@ index 38edf089bac1de826cfc7e72384151ee25e46a95..4681cbdf246d5e45ffbfb46d3e6612df
      }
  
      private void updatePlayerAttributes() {
-@@ -3199,4 +3209,157 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3208,4 +3218,157 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.ramBar = ramBar;
      }
      // Purpur end - Add rambar command
@@ -276,10 +276,10 @@ index 3d482f3eed2d320477d5375a04ebdde22820a00f..38b45e377d719c44f69aedb58f70ad06
              .pushJarResources()
              .build(VANILLA_PACK_INFO);
 diff --git a/net/minecraft/world/entity/Entity.java b/net/minecraft/world/entity/Entity.java
-index 918cb68282ce179c6c3f5455f108501f7e965068..c3a0fcd48ef43c35238fc1399aa0e48c6ef53b8f 100644
+index 086525c31bd8167baac79a7f41e3e4d1ca783136..7b2512a3ab0bad321e2d3b0d78b8171ed152f62a 100644
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -3696,7 +3696,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
+@@ -3695,7 +3695,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          return entity != null && (this == entity || this.considersEntityAsAlly(entity) || entity.considersEntityAsAlly(this));
      }
  
@@ -289,7 +289,7 @@ index 918cb68282ce179c6c3f5455f108501f7e965068..c3a0fcd48ef43c35238fc1399aa0e48c
      }
  
 diff --git a/net/minecraft/world/entity/LivingEntity.java b/net/minecraft/world/entity/LivingEntity.java
-index fdb6527c9d7e18c37e681ea2d8e4428ece49e2ff..0a858f29539d91280a222c4d7d014668a448884c 100644
+index d6be86981219f0fe0db15d36d9c85e9a56020373..e03f66c906b9124bfb203d20f886504c2912339a 100644
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
 @@ -225,7 +225,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
@@ -371,7 +371,7 @@ index 5c1992a7fd5d7c5fe23ebfad35a828263d0ff93c..1a5f2cc944505e6cf57d3cf0eabf15f3
              || super.considersEntityAsAlly(entity)
              || entity instanceof Vex vex && vex.getOwner() != null && this.considersEntityAsAlly(vex.getOwner());
 diff --git a/net/minecraft/world/entity/player/Player.java b/net/minecraft/world/entity/player/Player.java
-index 4dca1f9ac2ee2cd8ff4df64fe46fb8da047dbf80..0af384f69d2918c5fbf1ce85c2bf4aadaa5d5506 100644
+index 7d6026fdea18a7fe935973da5f7a90fd1605549a..b02357849047eb89fe4f69684eb7c9b028259cae 100644
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
 @@ -1284,13 +1284,15 @@ public abstract class Player extends LivingEntity {
@@ -410,7 +410,7 @@ index 4dca1f9ac2ee2cd8ff4df64fe46fb8da047dbf80..0af384f69d2918c5fbf1ce85c2bf4aad
                                  }
                              }
  
-@@ -2449,4 +2453,22 @@ public abstract class Player extends LivingEntity {
+@@ -2448,4 +2452,22 @@ public abstract class Player extends LivingEntity {
              return this.message;
          }
      }
@@ -434,7 +434,7 @@ index 4dca1f9ac2ee2cd8ff4df64fe46fb8da047dbf80..0af384f69d2918c5fbf1ce85c2bf4aad
 +    // CWS end - (BetterCombat)
  }
 diff --git a/net/minecraft/world/inventory/InventoryMenu.java b/net/minecraft/world/inventory/InventoryMenu.java
-index d4ff4db75544dfde4db925dc3dd702560c82d2b7..3a44917c7f3458def6135064ea0682d220bbd1e7 100644
+index 650430e225f4d8e925edd535a09e42759f8d6d5e..963eb73c6e9ee046d682967c9b8bd7268eced198 100644
 --- a/net/minecraft/world/inventory/InventoryMenu.java
 +++ b/net/minecraft/world/inventory/InventoryMenu.java
 @@ -2,6 +2,8 @@ package net.minecraft.world.inventory;
@@ -481,7 +481,7 @@ index d4ff4db75544dfde4db925dc3dd702560c82d2b7..3a44917c7f3458def6135064ea0682d2
              public ResourceLocation getNoItemIcon() {
                  return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
-index 7cf8894b1fd6283567dca0b7d0b945b2fbae1b8c..7e83fbe72ca1c0dcdae4eebb073758eb1df5c8e7 100644
+index f5ca3d6b29b11475ac56cd206464577b2d85b7dc..cfa5805ca715331c38592c891ca0122f1d95aa3d 100644
 --- a/net/minecraft/world/item/ItemStack.java
 +++ b/net/minecraft/world/item/ItemStack.java
 @@ -94,7 +94,7 @@ import org.apache.commons.lang3.function.TriConsumer;
@@ -493,7 +493,7 @@ index 7cf8894b1fd6283567dca0b7d0b945b2fbae1b8c..7e83fbe72ca1c0dcdae4eebb073758eb
      private static final List<Component> OP_NBT_WARNING = List.of(
          Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD),
          Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED),
-@@ -1389,4 +1389,28 @@ public final class ItemStack implements DataComponentHolder {
+@@ -1385,4 +1385,28 @@ public final class ItemStack implements DataComponentHolder {
      public boolean canDestroyBlock(BlockState state, Level level, BlockPos pos, Player player) {
          return this.getItem().canDestroyBlock(this, state, level, pos, player);
      }
@@ -523,7 +523,7 @@ index 7cf8894b1fd6283567dca0b7d0b945b2fbae1b8c..7e83fbe72ca1c0dcdae4eebb073758eb
 +    // CWS end - (BetterCombat) Weapon Attributes
  }
 diff --git a/net/minecraft/world/item/ProjectileWeaponItem.java b/net/minecraft/world/item/ProjectileWeaponItem.java
-index f37fd3b9ab725e5b8eb7fccf9b35bbc09e3a2d0c..57d26c3aae69da0fcad6cfa7c79fc5652d823f7c 100644
+index d1661c9b971ba431da3f71fd6e0c3517c6625a11..a8b8b28b38dc6990cd75856a870fe498e03a22d3 100644
 --- a/net/minecraft/world/item/ProjectileWeaponItem.java
 +++ b/net/minecraft/world/item/ProjectileWeaponItem.java
 @@ -31,12 +31,23 @@ public abstract class ProjectileWeaponItem extends Item {

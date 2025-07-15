@@ -85,7 +85,7 @@ index 1e08ac054947b1a0a6cce2f886be1ed83c74a642..d4b7b7747dda687fe3d12b85b7eccc96
                  break;
              }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index a162440a583801671787163d998d6b9546ef7e61..5e73db484a5526f4c39c7cc2de5ddc3ff037d2e4 100644
+index 658385b2887d6debec7fc941c28621da5d263411..d10d6d8c9341ce839e62c01ace4e72f6e7b8c2ae 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1808,6 +1808,26 @@ public class CraftEventFactory {
