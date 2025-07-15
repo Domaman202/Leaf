@@ -32,7 +32,7 @@ index 98e27b3cea8ee8c0ba3445a3153bc228c104f3df..58b71c605cdd07de8e84ac3e9ac49a6b
      private final String path;
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index 38edf089bac1de826cfc7e72384151ee25e46a95..a7cfe0e8c9bc282e02dc427125cfc53fb014454d 100644
+index 38edf089bac1de826cfc7e72384151ee25e46a95..4681cbdf246d5e45ffbfb46d3e6612df50067861 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -3,6 +3,8 @@ package net.minecraft.server.level;
@@ -104,7 +104,7 @@ index 38edf089bac1de826cfc7e72384151ee25e46a95..a7cfe0e8c9bc282e02dc427125cfc53f
      }
  
      private void updatePlayerAttributes() {
-@@ -3199,4 +3210,157 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
+@@ -3199,4 +3209,157 @@ public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patc
          this.ramBar = ramBar;
      }
      // Purpur end - Add rambar command
@@ -433,6 +433,53 @@ index 4dca1f9ac2ee2cd8ff4df64fe46fb8da047dbf80..0af384f69d2918c5fbf1ce85c2bf4aad
 +    }
 +    // CWS end - (BetterCombat)
  }
+diff --git a/net/minecraft/world/inventory/InventoryMenu.java b/net/minecraft/world/inventory/InventoryMenu.java
+index d4ff4db75544dfde4db925dc3dd702560c82d2b7..3a44917c7f3458def6135064ea0682d220bbd1e7 100644
+--- a/net/minecraft/world/inventory/InventoryMenu.java
++++ b/net/minecraft/world/inventory/InventoryMenu.java
+@@ -2,6 +2,8 @@ package net.minecraft.world.inventory;
+ 
+ import java.util.List;
+ import java.util.Map;
++
++import net.bettercombat.logic.WeaponRegistry;
+ import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.Container;
+@@ -64,12 +66,33 @@ public class InventoryMenu extends AbstractCraftingMenu {
+ 
+         this.addStandardInventorySlots(playerInventory, 8, 84);
+         this.addSlot(new Slot(playerInventory, 40, 77, 62) {
++            @Override
++            public void setByPlayer(ItemStack stack) {
++                if (this.isActive()) {
++                    super.setByPlayer(stack);
++                }
++            }
++
+             @Override
+             public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+                 owner.onEquipItem(EquipmentSlot.OFFHAND, oldStack, newStack);
+                 super.setByPlayer(newStack, oldStack);
+             }
+ 
++            @Override
++            public ItemStack getItem() {
++                if (this.isActive())
++                    return super.getItem();
++                return ItemStack.EMPTY;
++            }
++
++            @Override
++            public boolean isActive() {
++                var mainHandStack = ((Inventory) this.container).getSelectedItem();
++                var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
++                return mainHandAttributes == null || !mainHandAttributes.isTwoHanded();
++            }
++
+             @Override
+             public ResourceLocation getNoItemIcon() {
+                 return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
 diff --git a/net/minecraft/world/item/ItemStack.java b/net/minecraft/world/item/ItemStack.java
 index 7cf8894b1fd6283567dca0b7d0b945b2fbae1b8c..7e83fbe72ca1c0dcdae4eebb073758eb1df5c8e7 100644
 --- a/net/minecraft/world/item/ItemStack.java
@@ -539,52 +586,4 @@ index 183874d90d576d740c5d924accc5c0d7fdb8450c..15887ca274b64e25bb070ff65fab5565
 +
          return map;
      }
-
-
-diff --git a/net/minecraft/world/inventory/InventoryMenu.java b/net/minecraft/world/inventory/InventoryMenu.java
-index d4ff4db75544dfde4db925dc3dd702560c82d2b7..3a44917c7f3458def6135064ea0682d220bbd1e7 100644
---- a/net/minecraft/world/inventory/InventoryMenu.java
-+++ b/net/minecraft/world/inventory/InventoryMenu.java
-@@ -2,6 +2,8 @@ package net.minecraft.world.inventory;
-
- import java.util.List;
- import java.util.Map;
-+
-+import net.bettercombat.logic.WeaponRegistry;
- import net.minecraft.resources.ResourceLocation;
- import net.minecraft.server.level.ServerLevel;
- import net.minecraft.world.Container;
-@@ -64,12 +66,33 @@ public class InventoryMenu extends AbstractCraftingMenu {
-
-         this.addStandardInventorySlots(playerInventory, 8, 84);
-         this.addSlot(new Slot(playerInventory, 40, 77, 62) {
-+            @Override
-+            public void setByPlayer(ItemStack stack) {
-+                if (this.isActive()) {
-+                    super.setByPlayer(stack);
-+                }
-+            }
-+
-             @Override
-             public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
-                 owner.onEquipItem(EquipmentSlot.OFFHAND, oldStack, newStack);
-                 super.setByPlayer(newStack, oldStack);
-             }
-
-+            @Override
-+            public ItemStack getItem() {
-+                if (this.isActive())
-+                    return super.getItem();
-+                return ItemStack.EMPTY;
-+            }
-+
-+            @Override
-+            public boolean isActive() {
-+                var mainHandStack = ((Inventory) this.container).getSelectedItem();
-+                var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
-+                return mainHandAttributes == null || !mainHandAttributes.isTwoHanded();
-+            }
-+
-             @Override
-             public ResourceLocation getNoItemIcon() {
-                 return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
+ 
