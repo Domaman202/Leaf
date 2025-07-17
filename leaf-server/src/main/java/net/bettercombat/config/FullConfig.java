@@ -58,6 +58,8 @@ public class FullConfig {
                 this.server.fallback_compatibility_enabled = sc.getBoolean("fallback_compatibility_enabled", this.server.fallback_compatibility_enabled);
                 this.server.weapon_registry_logging = sc.getBoolean("weapon_registry_logging", this.server.weapon_registry_logging);
                 this.server.weapon_registry_compression = sc.getBoolean("weapon_registry_compression", this.server.weapon_registry_compression);
+                this.server.blacklist_offhand_by_id = getStringArray(sc, "blacklist_offhand_by_id", this.server.blacklist_offhand_by_id);
+                this.server.blacklist_offhand_by_category = getStringArray(sc, "blacklist_offhand_by_category", this.server.blacklist_offhand_by_category);
             }
             // Fallback
             if (!new File(plugin.getDataFolder(), "config/bettercombat/fallback.yml").exists()) {
@@ -138,6 +140,8 @@ public class FullConfig {
         sc.set("fallback_compatibility_enabled", this.server.fallback_compatibility_enabled);
         sc.set("weapon_registry_logging", this.server.weapon_registry_logging);
         sc.set("weapon_registry_compression", this.server.weapon_registry_compression);
+        setStringArray(sc, "blacklist_offhand_by_id", this.server.blacklist_offhand_by_id);
+        setStringArray(sc, "blacklist_offhand_by_category", this.server.blacklist_offhand_by_category);
     }
 
     public void saveFallback(YamlConfiguration fc) {

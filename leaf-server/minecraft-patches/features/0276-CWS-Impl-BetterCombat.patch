@@ -437,19 +437,15 @@ diff --git a/net/minecraft/world/inventory/InventoryMenu.java b/net/minecraft/wo
 index 650430e225f4d8e925edd535a09e42759f8d6d5e..963eb73c6e9ee046d682967c9b8bd7268eced198 100644
 --- a/net/minecraft/world/inventory/InventoryMenu.java
 +++ b/net/minecraft/world/inventory/InventoryMenu.java
-@@ -2,6 +2,8 @@ package net.minecraft.world.inventory;
- 
- import java.util.List;
- import java.util.Map;
-+
-+import net.bettercombat.logic.WeaponRegistry;
- import net.minecraft.resources.ResourceLocation;
- import net.minecraft.server.level.ServerLevel;
- import net.minecraft.world.Container;
-@@ -64,12 +66,33 @@ public class InventoryMenu extends AbstractCraftingMenu {
+@@ -64,12 +66,38 @@ public class InventoryMenu extends AbstractCraftingMenu {
  
          this.addStandardInventorySlots(playerInventory, 8, 84);
          this.addSlot(new Slot(playerInventory, 40, 77, 62) {
++            @Override
++            public boolean mayPlace(ItemStack stack) {
++               return net.bettercombat.utils.AttributeModifierHelper.checkOffhandPutAllow(stack);
++            }
++
 +            @Override
 +            public void setByPlayer(ItemStack stack) {
 +                if (this.isActive()) {
@@ -473,7 +469,7 @@ index 650430e225f4d8e925edd535a09e42759f8d6d5e..963eb73c6e9ee046d682967c9b8bd726
 +            @Override
 +            public boolean isActive() {
 +                var mainHandStack = ((Inventory) this.container).getSelectedItem();
-+                var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
++                var mainHandAttributes = net.bettercombat.logic.WeaponRegistry.getAttributes(mainHandStack);
 +                return mainHandAttributes == null || !mainHandAttributes.isTwoHanded();
 +            }
 +

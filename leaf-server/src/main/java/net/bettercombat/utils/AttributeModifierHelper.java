@@ -2,8 +2,11 @@ package net.bettercombat.utils;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import net.bettercombat.BetterCombatMod;
+import net.bettercombat.logic.WeaponRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -24,5 +27,27 @@ public class AttributeModifierHelper {
         Multimap<Holder<Attribute>, AttributeModifier> modifiersMap = HashMultimap.create();
         modifiersMap.put(attribute, modifier);
         return modifiersMap;
+    }
+
+
+    public static boolean checkOffhandPutAllow(ItemStack stack) {
+        var id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        for (var blacklist : BetterCombatMod.config.server.blacklist_offhand_by_id) {
+            if (blacklist.equals(id)) {
+                return false;
+            }
+        }
+        var attributes = WeaponRegistry.getAttributes(stack);
+        if (attributes == null)
+            return true;
+        if (attributes.isTwoHanded())
+            return false;
+        var category = attributes.category();
+        for (var blacklist : BetterCombatMod.config.server.blacklist_offhand_by_category) {
+            if (blacklist.equals(category)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

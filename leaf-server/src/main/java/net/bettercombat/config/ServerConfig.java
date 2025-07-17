@@ -51,6 +51,13 @@ public class ServerConfig {
     public boolean weapon_registry_logging = false;
     public boolean weapon_registry_compression = true;
 
+    public String[] blacklist_offhand_by_id = new String[]{
+        "minecraft:trident",
+        "minecraft:bow",
+        "minecraft:crossbow"
+    };
+    public String[] blacklist_offhand_by_category = new String[0];
+
     public float getUpswingMultiplier() {
         return Math.max(0.2F, Math.min(1, upswing_multiplier));
     }
